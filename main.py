@@ -81,10 +81,12 @@ if __name__ == '__main__':
 
     dense = Flatten()(base_model.output)
 
-    base_model = Model(base_model.input, dense)
+    model = Model(base_model.input, dense)
 
     img_size = (Image_Height, Image_width)
 
     pred_generator = predic_gen(train_path, img_size, Batch_size)
 
     (imgs, labels) = next(pred_generator)
+
+    features = model.predict(imgs)
