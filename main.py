@@ -12,7 +12,7 @@ import shutil
 import matplotlib.pyplot as plt
 from keras.preprocessing.image import ImageDataGenerator
 from keras.applications.resnet50 import ResNet50
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, InputLayer, Activation
+from keras.layers import GlobalAveragePooling2D
 from keras.callbacks import EarlyStopping, TensorBoard
 from keras import activations
 from keras.models import Sequential
@@ -21,6 +21,7 @@ from keras.models import Model
 import keras
 import time
 import tqdm
+import pickle
 from PIL import Image
 
 # ---------------------------------------------------------------
@@ -28,12 +29,12 @@ from PIL import Image
 # predefined variables
 
 Image_Height, Image_width = 100, 100
-Batch_size = 3000
+Batch_size = 4000
 num_classes = 12
 class_names = ['Charlock', 'Common Chickweed', 'Black-grass',
-                     'Fat Hen', 'Loose Silky-bent', 'Sugar beet', 'Maize',
-                     'Scentless Mayweed', 'Shepherds Purse', 'Cleavers',
-                     'Small-flowered Cranesbill', 'Common wheat']
+               'Fat Hen', 'Loose Silky-bent', 'Sugar beet', 'Maize',
+               'Scentless Mayweed', 'Shepherds Purse', 'Cleavers',
+               'Small-flowered Cranesbill', 'Common wheat']
 feature_space_size = 1024
 
 # this is the path in my google drive
@@ -73,20 +74,49 @@ def predic_gen(path, image_size, batch_size, data_classes=None):
     return generator
 
 
+def my_model():
+    model = ResNet50(include_top=False, weights='imagenet',
+                     input_shape=(Image_Height, Image_width, 3))
+
+    out_lay = GlobalAveragePooling2D()(model.output)
+
+    model = Model(model.input, out_lay)
+
+    return model
+
+
+def my_image():
+    """
+    this function loads data and their labels from the original input folder
+    or the associated pickle file
+
+    :return: 4000 images of plant seedling and their labels of 12 classes
+    """
+
+    try:
+
+        with open('./input/image_n_label.pickle') as f:
+            image_n_label = pickle.load(f)
+
+    finally:
+
+        img_size = (Image_Height, Image_width)
+
+        pred_gen = predic_gen(train_path, img_size, Batch_size)
+
+        image_n_label = next(pred_gen)
+
+        with open('./input/image_n_label.pickle', 'wb') as f:
+            pickle.dump(image_n_label, f)
+
+    return image_n_label
+
+
 if __name__ == '__main__':
     # Transfer Learning: pretrained Resnet
 
-    base_model = ResNet50(include_top=False, weights='imagenet',
-                          input_shape=(Image_Height, Image_width, 3))
+    imgs, labels = my_image()
 
-    dense = Flatten()(base_model.output)
-
-    model = Model(base_model.input, dense)
-
-    img_size = (Image_Height, Image_width)
-
-    pred_generator = predic_gen(train_path, img_size, Batch_size)
-
-    (imgs, labels) = next(pred_generator)
+    model = my_model()
 
     features = model.predict(imgs)
