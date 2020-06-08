@@ -29,7 +29,7 @@ from PIL import Image
 # predefined variables
 
 Image_Height, Image_width = 100, 100
-Batch_size = 4000
+Batch_size = 4500
 num_classes = 12
 class_names = ['Charlock', 'Common Chickweed', 'Black-grass',
                'Fat Hen', 'Loose Silky-bent', 'Sugar beet', 'Maize',
@@ -90,15 +90,15 @@ def my_image():
     this function loads data and their labels from the original input folder
     or the associated pickle file
 
-    :return: 4000 images of plant seedling and their labels of 12 classes
+    :return: images of plant seedling and their labels of 12 classes
     """
 
-    try:
+    if os.path.isfile('input/image_n_label.pickle'):
 
-        with open('./input/image_n_label.pickle') as f:
+        with open('input/image_n_label.pickle','rb') as f:
             image_n_label = pickle.load(f)
 
-    finally:
+    else:
 
         img_size = (Image_Height, Image_width)
 
@@ -116,6 +116,8 @@ if __name__ == '__main__':
     # Transfer Learning: pretrained Resnet
 
     imgs, labels = my_image()
+
+    print(imgs, labels)
 
     model = my_model()
 
