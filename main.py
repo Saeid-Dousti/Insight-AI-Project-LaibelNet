@@ -18,6 +18,9 @@ from keras import activations
 from keras.models import Sequential
 from keras import optimizers
 from keras.models import Model
+from sklearn.mixture import GaussianMixture as GMM
+from sklearn.cluster import KMeans
+from sklearn.cluster import DBSCAN
 import keras
 import time
 import tqdm
@@ -28,14 +31,14 @@ from PIL import Image
 
 # predefined variables
 
-Image_Height, Image_width = 100, 100
-Batch_size = 4500
+Image_Height, Image_width = 250, 250
+Batch_size = 100
 num_classes = 12
 class_names = ['Charlock', 'Common Chickweed', 'Black-grass',
                'Fat Hen', 'Loose Silky-bent', 'Sugar beet', 'Maize',
                'Scentless Mayweed', 'Shepherds Purse', 'Cleavers',
                'Small-flowered Cranesbill', 'Common wheat']
-feature_space_size = 1024
+feature_space_size = 2048
 
 # this is the path in my google drive
 train_path = 'C:/Users/Saeid/Documents/AI_project/input/train'
@@ -53,7 +56,16 @@ def hms_string(sec_elapsed):
     return f"{h}:{m:>02}:{s:>05.2f}"
 
 
-def predic_gen(path, image_size, batch_size, data_classes=None):
+def predic_gen(path, batch_size, image_size=None, data_classes=None):
+    '''
+    this function creates data generator
+    :param path:
+    :param image_size:
+    :param batch_size:
+    :param data_classes:
+    :return:
+    '''
+
     if data_classes is None:
         data_classes = class_names
 
@@ -61,20 +73,33 @@ def predic_gen(path, image_size, batch_size, data_classes=None):
         # set rescaling factor (applied before any other transformation)
         rescale=1. / 255)
 
-    generator = datagen.flow_from_directory(
-        directory=path,
-        target_size=image_size,
-        color_mode="rgb",
-        batch_size=batch_size,
-        class_mode="categorical",
-        classes=data_classes,
-        shuffle=True,
-        subset='training')
+    if image_size is None:
+
+        generator = datagen.flow_from_directory(
+            directory=path,
+            color_mode="rgb",
+            batch_size=batch_size,
+            class_mode="categorical",
+            classes=data_classes,
+            shuffle=True,
+            subset='training')
+    else:
+
+        generator = datagen.flow_from_directory(
+            directory=path,
+            target_size=image_size,
+            color_mode="rgb",
+            batch_size=batch_size,
+            class_mode="categorical",
+            classes=data_classes,
+            shuffle=True,
+            subset='training')
 
     return generator
 
 
 def my_model():
+
     model = ResNet50(include_top=False, weights='imagenet',
                      input_shape=(Image_Height, Image_width, 3))
 
@@ -85,40 +110,56 @@ def my_model():
     return model
 
 
-def my_image():
+def read_images():
     """
-    this function loads data and their labels from the original input folder
-    or the associated pickle file
+    - this function loads data and their labels from the original input folder
+        or the associated pickle file
 
     :return: images of plant seedling and their labels of 12 classes
     """
 
     if os.path.isfile('input/image_n_label.pickle'):
 
-        with open('input/image_n_label.pickle','rb') as f:
+        with open('input/image_n_label.pickle', 'rb') as f:
             image_n_label = pickle.load(f)
 
     else:
 
         img_size = (Image_Height, Image_width)
 
-        pred_gen = predic_gen(train_path, img_size, Batch_size)
+        pred_gen = predic_gen(train_path, Batch_size, img_size)
 
         image_n_label = next(pred_gen)
 
         with open('./input/image_n_label.pickle', 'wb') as f:
-            pickle.dump(image_n_label, f)
+                pickle.dump(image_n_label, f)
 
     return image_n_label
+
+
+def df_maker(feature, labels):
+    '''
+    create data frame to store clustering info
+    :return: data frame
+    '''
+    df = pd.DataFrame()
+    df['img_ftrs'] = [feature[i, :] for i in range(len(feature[:, 0]))]
+    df['Real_Labls'] = [labels[i].argmax() for i in range(len(feature[:, 0]))]
+
+    return df
 
 
 if __name__ == '__main__':
     # Transfer Learning: pretrained Resnet
 
-    imgs, labels = my_image()
-
-    print(imgs, labels)
+    imgs, labels = read_images()
 
     model = my_model()
 
     features = model.predict(imgs)
+
+    df = df_maker(features, labels)
+
+    kmeans = KMeans(n_clusters=12, random_state=0).fit(features)
+
+    df['KMN_Labls'] = kmeans.labels_
