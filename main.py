@@ -10,6 +10,7 @@ import pandas as pd
 import os
 import shutil
 import matplotlib.pyplot as plt
+from keras.datasets import fashion_mnist
 from keras.preprocessing.image import ImageDataGenerator
 from keras.applications.resnet50 import ResNet50
 from keras.layers import GlobalAveragePooling2D
@@ -19,6 +20,7 @@ from keras.models import Sequential
 from keras import optimizers
 from keras.models import Model
 from sklearn.mixture import GaussianMixture as GMM
+#from sklearn.mixture import bayesianGaussianMixture as BGMM
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
 import keras
@@ -115,8 +117,9 @@ def read_images():
     - this function loads data and their labels from the original input folder
         or the associated pickle file
 
-    :return: images of plant seedling and their labels of 12 classes
+    :return: images of plant seedling and their labels of 12 classes or 10 fashion
     """
+
 
     if os.path.isfile('input/image_n_label.pickle'):
 
@@ -149,10 +152,10 @@ def df_maker(feature, labels):
     return df
 
 
-if __name__ == '__main__':
+def main():
     # Transfer Learning: pretrained Resnet
 
-    imgs, labels = read_images()
+    imgs, labels = read_images(1) # any input can indicated fashion-mnist dataset
 
     model = my_model()
 
@@ -162,4 +165,16 @@ if __name__ == '__main__':
 
     kmeans = KMeans(n_clusters=12, random_state=0).fit(features)
 
+    gmm = GMM(n_components = 12).fit(features)
+
+    #bgmm = BGMM(n_components=12).fit(features)
+
     df['KMN_Labls'] = kmeans.labels_
+
+    df['gmm'] = gmm.predict(features)
+
+    #df['bgmm'] = bgmm.predict(features)
+
+if __name__ == '__main__':
+
+    main()
