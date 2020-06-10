@@ -1,1 +1,1 @@
-# Label-Discovery
+# TagNet: An Automatic Label Discovery Tool
