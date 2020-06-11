@@ -109,17 +109,6 @@ def predic_gen(path, batch_size, image_size=None, data_classes=None):
     return generator
 
 
-def my_model():
-    model = ResNet50(include_top=False, weights='imagenet',
-                     input_shape=(Image_Height, Image_width, 3))
-
-    out_lay = GlobalAveragePooling2D()(model.output)
-
-    model = Model(model.input, out_lay)
-
-    return model
-
-
 def df_maker(feature, labels):
     '''
     create data frame to store clustering info
