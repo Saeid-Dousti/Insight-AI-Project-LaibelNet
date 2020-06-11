@@ -1,4 +1,4 @@
-# lAIbelNet: An Automatic Image Labeling Tool
+# LAIbelNet: An Automatic Image Labeling Tool
 Framework for machine learning projects at Insight Atrificial Intelegence summer of 2020.
 
 ## Motivation for this project:
