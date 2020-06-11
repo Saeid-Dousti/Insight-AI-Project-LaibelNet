@@ -6,11 +6,13 @@ main file
 import tensorflow as tf
 import datetime
 import numpy as np
+import argparse
 import pandas as pd
 import os
 import shutil
 import matplotlib.pyplot as plt
 from keras.datasets import fashion_mnist
+from import_images import read_images
 from keras.preprocessing.image import ImageDataGenerator
 from keras.applications.resnet50 import ResNet50
 from keras.layers import GlobalAveragePooling2D
@@ -20,7 +22,7 @@ from keras.models import Sequential
 from keras import optimizers
 from keras.models import Model
 from sklearn.mixture import GaussianMixture as GMM
-#from sklearn.mixture import bayesianGaussianMixture as BGMM
+# from sklearn.mixture import bayesianGaussianMixture as BGMM
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
 import keras
@@ -29,11 +31,25 @@ import tqdm
 import pickle
 from PIL import Image
 
+
 # ---------------------------------------------------------------
 
 # predefined variables
 
-Image_Height, Image_width = 250, 250
+def pars_arg():
+    parser = argparse.ArgumentParser(description='lAIbelNet: an automatic labeling tool using unsupervised clustering')
+
+    parser.add_argument('--res', type=int, help='Image Resolution', default=150)
+    parser.add_argument('--mode', type=int, help='0:Labeled, 1:Unlabled', default=0)
+    parser.add_argument('--data_path', type=str, help='Data Path', default='data')
+    parser.add_argument('--n_images', type=int, help='Number of Images to Label', default=200)
+    parser.add_argument('--ftr_ext', type=int, help='0:MobileNetV2, 1:ResNet50, 2:InceptionResNetV2', default=0)
+
+    args = parser.parse_args()
+    return args
+
+
+Image_Height, Image_width = 250, 250  #
 Batch_size = 100
 num_classes = 12
 class_names = ['Charlock', 'Common Chickweed', 'Black-grass',
@@ -43,7 +59,7 @@ class_names = ['Charlock', 'Common Chickweed', 'Black-grass',
 feature_space_size = 2048
 
 # this is the path in my google drive
-train_path = 'C:/Users/Saeid/Documents/AI_project/input/train'
+train_path = 'data'
 
 
 # model_path = '/content/drive/My Drive/Python 3/AI_Seedling_train/Model'
@@ -101,7 +117,6 @@ def predic_gen(path, batch_size, image_size=None, data_classes=None):
 
 
 def my_model():
-
     model = ResNet50(include_top=False, weights='imagenet',
                      input_shape=(Image_Height, Image_width, 3))
 
@@ -110,34 +125,6 @@ def my_model():
     model = Model(model.input, out_lay)
 
     return model
-
-
-def read_images():
-    """
-    - this function loads data and their labels from the original input folder
-        or the associated pickle file
-
-    :return: images of plant seedling and their labels of 12 classes or 10 fashion
-    """
-
-
-    if os.path.isfile('input/image_n_label.pickle'):
-
-        with open('input/image_n_label.pickle', 'rb') as f:
-            image_n_label = pickle.load(f)
-
-    else:
-
-        img_size = (Image_Height, Image_width)
-
-        pred_gen = predic_gen(train_path, Batch_size, img_size)
-
-        image_n_label = next(pred_gen)
-
-        with open('./input/image_n_label.pickle', 'wb') as f:
-                pickle.dump(image_n_label, f)
-
-    return image_n_label
 
 
 def df_maker(feature, labels):
@@ -153,9 +140,14 @@ def df_maker(feature, labels):
 
 
 def main():
-    # Transfer Learning: pretrained Resnet
+    args = pars_arg()
+    print(args)
 
-    imgs, labels = read_images(1) # any input can indicated fashion-mnist dataset
+    image_size = (args.res,args.res)
+
+    gen = read_images(args.path, image_size) # labeled
+
+    unlabeled_images = read_images(args.path, image_size, 1, args.n_images) # unlabeled
 
     model = my_model()
 
@@ -165,16 +157,16 @@ def main():
 
     kmeans = KMeans(n_clusters=12, random_state=0).fit(features)
 
-    gmm = GMM(n_components = 12).fit(features)
+    gmm = GMM(n_components=12).fit(features)
 
-    #bgmm = BGMM(n_components=12).fit(features)
+    # bgmm = BGMM(n_components=12).fit(features)
 
     df['KMN_Labls'] = kmeans.labels_
 
     df['gmm'] = gmm.predict(features)
 
-    #df['bgmm'] = bgmm.predict(features)
+    # df['bgmm'] = bgmm.predict(features)
+
 
 if __name__ == '__main__':
-
     main()
