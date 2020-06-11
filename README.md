@@ -11,13 +11,17 @@ This tool can process both labled and/or unlabeled image sets. Labeled images ca
 --data
   |
   --Labeled
-      |  
-      ----class1
-      
+  |    |  
+  |    ----class1
+  |    |  
+  |    ----class2
+  |    |  
+  |    ----class3
+  |    ....
+  |
+  --Unlabeld    
 
 ```
-# Insight_Project_Framework
-Framework for machine learning projects at Insight Data Science.
 
 ## Motivation for this project format:
 - **Insight_Project_Framework** : Put all source code for production within structured directory
