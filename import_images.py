@@ -15,9 +15,12 @@ def load_image(image_path, image_size):
     return im
 
 
-def read_images(path, image_size, task=None, n_images=None):
-    if task is None:
+def read_images(path: str, image_size: tuple, task: bool, n_images: int) -> list:
+    if task == 0:
         path = os.path.join(path, 'Labeled')
+
+        if n_images is None:
+            n_images = sum([len(os.listdir(os.path.join(path, folder))) for folder in os.listdir(path)])
 
         class_names = os.listdir(path)
 
@@ -29,11 +32,12 @@ def read_images(path, image_size, task=None, n_images=None):
             directory=path,
             target_size=image_size,
             color_mode="rgb",
-            batch_size=32,
+            batch_size=n_images,
             classes=class_names,
+            class_mode='sparse',
             shuffle=True)
 
-        return generator
+        return next(generator)
 
     else:
         path = os.path.join(path, 'Unlabeled')
@@ -47,4 +51,4 @@ def read_images(path, image_size, task=None, n_images=None):
             [np.array(load_image(os.path.join(path, image), image_size)) / 255.0 for image in image_list[0: n_images]]
         )
 
-        return unlabeled_images
+        return unlabeled_images, None

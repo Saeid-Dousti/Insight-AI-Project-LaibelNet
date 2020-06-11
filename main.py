@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from import_images import read_images
 from cnn_model import cnn_model
+from cluster import cluster
 from keras.preprocessing.image import ImageDataGenerator
 from keras.applications.resnet50 import ResNet50
 from keras.layers import GlobalAveragePooling2D
@@ -15,7 +16,6 @@ from keras.models import Sequential
 from keras import optimizers
 from keras.models import Model
 from sklearn.mixture import GaussianMixture as GMM
-# from sklearn.mixture import bayesianGaussianMixture as BGMM
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
 import keras
@@ -35,8 +35,9 @@ def pars_arg():
     parser.add_argument('--res', type=int, help='Image Resolution', default=150)
     parser.add_argument('--mode', type=int, help='0:Labeled, 1:Unlabeled', default=0)
     parser.add_argument('--data_path', type=str, help='Data Path', default='data')
-    parser.add_argument('--n_images', type=int, help='Number of Images to Label', default=200)
+    parser.add_argument('--n_images', type=int, help='Number of Images to Label', default=None)
     parser.add_argument('--ftr_ext', type=int, help='0:MobileNetV2, 1:ResNet50, 2:InceptionResNetV2', default=0)
+    parser.add_argument('--max_clustr', type=int, help='Max Number of Clusters', default=50)
 
     args = parser.parse_args()
     return args
@@ -109,14 +110,21 @@ def predic_gen(path, batch_size, image_size=None, data_classes=None):
     return generator
 
 
-def df_maker(feature, labels):
+def df_maker(imgs, features, labels):
     '''
     create data frame to store clustering info
     :return: data frame
     '''
-    df = pd.DataFrame()
-    df['img_ftrs'] = [feature[i, :] for i in range(len(feature[:, 0]))]
-    df['Real_Labls'] = [labels[i].argmax() for i in range(len(feature[:, 0]))]
+    df = pd.DataFrame(df)
+    df['img','Real_Labls','img_ftrs'] = imgs
+    df['img_ftrs'] = features
+    df['Real_Labls'] = labels
+    print(df)
+    #df['img_ftrs'] = [feature[i, :] for i in range(len(feature[:, 0]))]
+    #df['Real_Labls'] = [labels[i].argmax() for i in range(len(feature[:, 0]))]
+    df = pd.DataFrame(df)
+
+    df.head()
 
     return df
 
@@ -127,21 +135,22 @@ print(args)
 
 image_size = (args.res, args.res)
 
-gen = read_images(args.data_path, image_size)  # labeled
-
-unlabeled_images = read_images(args.data_path, image_size, args.mode, args.n_images)  # unlabeled
-
 model = cnn_model(args.ftr_ext,image_size)
 
-print(unlabeled_images.shape, gen, model)
+images, labels = read_images(args.data_path, image_size, args.mode, args.n_images)
 
-features = model.predict(imgs)
+features = model.predict(images)
 
-df = df_maker(features, labels)
+print(images.shape, labels, model, features.shape)
 
-kmeans = KMeans(n_clusters=12, random_state=0).fit(features)
+# df_maker(images, features, labels)
 
-gmm = GMM(n_components=12).fit(features)
+silhout, opt_clustr = cluster(features, args.max_clustr)
+
+plt.figure()
+plt.scatter(silhout[KMeans][0],silhout[KMeans][1])
+plt.scatter(silhout[GMM][0],silhout[GMM][1])
+plt.show()
 
 # bgmm = BGMM(n_components=12).fit(features)
 
