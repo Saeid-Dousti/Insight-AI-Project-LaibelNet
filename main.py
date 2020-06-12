@@ -4,17 +4,12 @@ import os
 import shutil
 import matplotlib.pyplot as plt
 import tensorflow as tf
+from matplotlib import rcParams
+import numpy as np
 from import_images import read_images
 from cnn_model import cnn_model
-from cluster import cluster
+from cluster import clustering
 from keras.preprocessing.image import ImageDataGenerator
-from keras.applications.resnet50 import ResNet50
-from keras.layers import GlobalAveragePooling2D
-from keras.callbacks import EarlyStopping, TensorBoard
-from keras import activations
-from keras.models import Sequential
-from keras import optimizers
-from keras.models import Model
 from sklearn.mixture import GaussianMixture as GMM
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
@@ -37,6 +32,7 @@ def pars_arg():
     parser.add_argument('--data_path', type=str, help='Data Path', default='data')
     parser.add_argument('--n_images', type=int, help='Number of Images to Label', default=None)
     parser.add_argument('--ftr_ext', type=int, help='0:MobileNetV2, 1:ResNet50, 2:InceptionResNetV2', default=0)
+    parser.add_argument('--min_clustr', type=int, help='Min Number of Clusters', default=2)
     parser.add_argument('--max_clustr', type=int, help='Max Number of Clusters', default=50)
 
     args = parser.parse_args()
@@ -129,6 +125,26 @@ def df_maker(imgs, features, labels):
     return df
 
 
+def plot_():
+    rcParams['figuer.figsize'] = 16, 5
+    _ = plt.plot(range(2,10), silhout, "bo-", color='blue', linewith=3, markersize=8,
+                 label='Silhoutee curve')
+    _ = plt.xlabel("$k$",fontsize=14, family='Arial')
+    _ = plt.ylabel("Silhoutte score", fontsize=14, family='Arial')
+    _ = plt.grid(which='major', color='#cccccc', linestyle='--')
+    _ = plt.title('Silhoutee curve for predict optimal number of clusters',
+                  family='Arial', fontsize=14)
+
+    k=np.argmax(silhout) + 2
+
+    _ = plt.axvline(x=k, linestyle='--', c='green', linewith=3,
+                    label=f'Optimal number of clusters({k})')
+    _ = plt.scatter(k, silhout[k-2], c='red', s= 400)
+    _ = plt.legend(shadow=True)
+    _ = plt.show()
+
+    print(f'The optimal number of clusters is {k}')
+
 # def main():
 args = pars_arg()
 print(args)
@@ -145,11 +161,11 @@ print(images.shape, labels, model, features.shape)
 
 # df_maker(images, features, labels)
 
-silhout, opt_clustr = cluster(features, args.max_clustr)
+silhout, opt_clustr = clustering(features, args.min_clustr, args.max_clustr)
 
 plt.figure()
-plt.scatter(silhout[KMeans][0],silhout[KMeans][1])
-plt.scatter(silhout[GMM][0],silhout[GMM][1])
+plt.plot(np.arange(3, 16), silhout['KMeans'], linestyle='-')
+plt.plot(np.arange(3, 16), silhout['GMM'], linestyle='--')
 plt.show()
 
 # bgmm = BGMM(n_components=12).fit(features)
