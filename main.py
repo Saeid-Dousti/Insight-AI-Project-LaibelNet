@@ -1,7 +1,7 @@
 import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
-import tensorflow as tf
+import tensorflow as tf 
 from matplotlib import rcParams
 import numpy as np
 from import_images import read_images
