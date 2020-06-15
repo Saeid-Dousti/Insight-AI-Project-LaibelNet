@@ -3,8 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from matplotlib import rcParams
+import seaborn as sns
 import numpy as np
-from import_images import read_images
+from load_image import load_image
+from image_set import Image_set
 from cnn_model import cnn_model
 from cluster import clustering
 from keras.preprocessing.image import ImageDataGenerator
@@ -18,6 +20,7 @@ import tqdm
 import pickle
 from PIL import Image
 
+@st.cache(persist=True)
 
 # ---------------------------------------------------------------
 
@@ -31,7 +34,7 @@ def pars_arg():
     parser.add_argument('--data_path', type=str, help='Data Path', default='data')
     parser.add_argument('--n_images', type=int, help='Number of Images to Label', default=None)
     parser.add_argument('--ftr_ext', type=int, help='0:MobileNetV2, 1:ResNet50, 2:InceptionResNetV2', default=0)
-    parser.add_argument('--min_clustr', type=int, help='Min Number of Clusters', default=2)
+    parser.add_argument('--min_clustr', type=int, help='Min Number of Clusters', default=3)
     parser.add_argument('--max_clustr', type=int, help='Max Number of Clusters', default=10)
 
     args = parser.parse_args()
@@ -80,22 +83,63 @@ def plot_():
 
 def main():
     args = pars_arg()
-    st.write('hello')
-    st.title("L`ai'belNet: ")
+
+    # sidebar title and logo
+    st.sidebar.title("L`ai'belNet\n An Automatic Image Labeling Tool")
+
+    st.sidebar.image(Image.open('label.jpg').resize((240, 106)))
+
+    path_name = st.sidebar.text_input('Enter imageset path (Ex. data\Labled):', args.data_path)
+
+    img_num = st.sidebar.text_input('Enter num. of imgs to analyze (ALL for all imgs):',
+                                    ['All' if args.n_images is None else args.n_images][0])
+
+    if img_num.lower() == 'all':
+        img_num = None
+    else:
+        try:
+            img_num = abs(int(img_num))
+        except ValueError:
+            st.sidebar.error('Non-integer entry')
 
     image_size = (args.res, args.res)
 
-    model = cnn_model(args.ftr_ext, image_size)
+    my_imageset = Image_set(path_name, image_size, img_num)
 
-    images, labels = read_images(args.data_path, image_size, args.mode, args.n_images)
+    # display
+    st.markdown('Sample images from imageset **"'+path_name+'"** :')
 
-    features = model.predict(images)
+    st.image([Image.open(img).resize((180, 180))
+              for img in my_imageset.image_df['Path'].sample(n=3, random_state=1)])
 
-    print(images.shape, labels, model, features.shape)
+    st.markdown('Imageset Information Table:')
+
+    st.dataframe(my_imageset.image_df)
+
+    img_sel_index = st.selectbox('Select an image index to display:', my_imageset.image_df.index)
+
+    img, label = my_imageset.image_df[['Path', 'Label']].iloc[img_sel_index]
+
+    st.image(Image.open(img).resize((180, 180)), caption=label)
+
+    st.markdown('Imageset label counts:')
+
+    sns.countplot(my_imageset.image_df['Label'])
+
+    st.pyplot()
+
+
+    cnn_model_ = cnn_model(args.ftr_ext, image_size)
+
+    # images, labels = read_images(, image_size, args.mode)
+
+    features = cnn_model_.predict(my_imageset.image_df['images'])
+
+    print(images.shape, labels, cnn_model_, features.shape)
 
     # df_maker(images, features, labels)
 
-    silhout, opt_clustr = clustering(features, args.min_clustr, args.max_clustr)
+    silhout, opt_clustr, optimized_model = clustering(features, args.min_clustr, args.max_clustr)
 
     print(silhout)
     print(opt_clustr)
