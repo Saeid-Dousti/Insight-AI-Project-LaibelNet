@@ -1,3 +1,4 @@
+import os
 import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -20,8 +21,8 @@ import tqdm
 import pickle
 from PIL import Image
 
-@st.cache(persist=True)
 
+@st.cache(persist=True)
 # ---------------------------------------------------------------
 
 # predefined variables
@@ -33,7 +34,7 @@ def pars_arg():
     parser.add_argument('--mode', type=int, help='0:Labeled, 1:Unlabeled', default=1)
     parser.add_argument('--data_path', type=str, help='Data Path', default='data')
     parser.add_argument('--n_images', type=int, help='Number of Images to Label', default=None)
-    parser.add_argument('--ftr_ext', type=int, help='0:MobileNetV2, 1:ResNet50, 2:InceptionResNetV2', default=0)
+    #parser.add_argument('--ftr_ext', type=int, help='0:MobileNetV2, 1:ResNet50, 2:InceptionResNetV2', default=0)
     parser.add_argument('--min_clustr', type=int, help='Min Number of Clusters', default=3)
     parser.add_argument('--max_clustr', type=int, help='Max Number of Clusters', default=10)
 
@@ -81,6 +82,13 @@ def plot_():
     print(f'The optimal number of clusters is {k}')
 
 
+def total_img_nums(path):
+    nums = 0
+    for root, _, files in os.walk(path):
+        nums += len(files)
+    return nums
+
+
 def main():
     args = pars_arg()
 
@@ -91,25 +99,23 @@ def main():
 
     path_name = st.sidebar.text_input('Enter imageset path (Ex. data\Labled):', args.data_path)
 
-    img_num = st.sidebar.text_input('Enter num. of imgs to analyze (ALL for all imgs):',
-                                    ['All' if args.n_images is None else args.n_images][0])
+    img_num = st.sidebar.slider('Number of images to analyze:', 2, total_img_nums(path_name), total_img_nums(path_name))
 
-    if img_num.lower() == 'all':
+    if img_num == total_img_nums(path_name):
         img_num = None
-    else:
-        try:
-            img_num = abs(int(img_num))
-        except ValueError:
-            st.sidebar.error('Non-integer entry')
 
-    image_size = (args.res, args.res)
+    img_res = st.sidebar.slider('Image size to resize (224 recommended):', 30, 400, args.res)
 
-    my_imageset = Image_set(path_name, image_size, img_num)
+    image_size = (img_res, img_res)
+
+    with st.spinner('loading imageset...'):
+        my_imageset = Image_set(path_name, image_size, img_num)
+    st.success('Loaded!')
 
     # display
-    st.markdown('Sample images from imageset **"'+path_name+'"** :')
+    st.markdown('Sample images from imageset **"' + path_name + '"** :')
 
-    st.image([Image.open(img).resize((180, 180))
+    st.image([Image.open(img).resize(image_size)
               for img in my_imageset.image_df['Path'].sample(n=3, random_state=1)])
 
     st.markdown('Imageset Information Table:')
@@ -120,7 +126,7 @@ def main():
 
     img, label = my_imageset.image_df[['Path', 'Label']].iloc[img_sel_index]
 
-    st.image(Image.open(img).resize((180, 180)), caption=label)
+    st.image(Image.open(img).resize(image_size), caption=label)
 
     st.markdown('Imageset label counts:')
 
@@ -128,8 +134,11 @@ def main():
 
     st.pyplot()
 
+    cnn_dict = {'MobileNetV2': 0, 'ResNet50': 1, 'InceptionResNetV2': 2}
 
-    cnn_model_ = cnn_model(args.ftr_ext, image_size)
+    cnn_name = st.sidebar.selectbox('Select CNN Feature Extractor Model:', list(cnn_dict))
+
+    cnn_model_ = cnn_model(cnn_name, image_size)
 
     # images, labels = read_images(, image_size, args.mode)
 
@@ -148,7 +157,6 @@ def main():
     plt.plot(np.arange(args.min_clustr, args.max_clustr), silhout['KMeans'], linestyle='-')
     plt.plot(np.arange(args.min_clustr, args.max_clustr), silhout['GMM'], linestyle='--')
     plt.show()
-
 
 
 if __name__ == '__main__':

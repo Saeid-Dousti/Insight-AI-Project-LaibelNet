@@ -1,11 +1,12 @@
 import os
+import streamlit as st
 from load_image import load_image
 from PIL import Image
 import pandas as pd
 import numpy as np
 from sklearn import preprocessing
 
-
+@st.cache(suppress_st_warning=True)
 class Image_set():
 
     def __init__(self, path, image_size, num_image=None):
@@ -61,7 +62,6 @@ class Image_set():
 
         le = preprocessing.LabelEncoder()
         le.fit(image_label)
-        print(le.transform(image_label))
 
         df = pd.DataFrame(list(zip(np.arange(len(image_name)), image_name, image_label, image_path, image_nparray,
                                    le.transform(image_label))),
