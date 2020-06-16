@@ -13,7 +13,10 @@ class Image_set():
         self.path = path
         self.image_size = image_size
         self.num_image = num_image
+        self.image_nparray = []
+        self.image_df = []
         self.image_frame()
+
 
     def image_frame(self):
 
@@ -63,9 +66,11 @@ class Image_set():
         le = preprocessing.LabelEncoder()
         le.fit(image_label)
 
+        self.image_nparray = np.asarray(image_nparray)
+
         df = pd.DataFrame(list(zip(np.arange(len(image_name)), image_name, image_label, image_path, image_nparray,
                                    le.transform(image_label))),
-                          columns=['Index', 'Name', 'Label', 'Path', 'NP Array', 'Label Code'])
+                          columns=['Index', 'Name', 'sub-directory', 'Path', 'NP_Array', 'Label Code'])
 
         self.image_df = df
 

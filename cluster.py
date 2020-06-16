@@ -4,7 +4,14 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
 
-def clustering(features, min_clustr, max_clustr):
+def clustering2known(features, k):
+
+    KMeans(n_clusters=k, random_state=0).fit(features)
+
+    GMM(n_components=k, random_state=0).fit(features)
+
+
+def clustering2UNknown(features, min_clustr, max_clustr):
     silhout = dict()
     opt_clustr = dict()
     optimized_model = dict()
