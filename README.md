@@ -1,5 +1,5 @@
 # L`ai'belNet
-An Automatic Image Labeling Tool
+An AI-powered Image Labeling Tool
 
 Framework for machine learning projects at Insight Atrificial Intelegence summer of 2020.
 
