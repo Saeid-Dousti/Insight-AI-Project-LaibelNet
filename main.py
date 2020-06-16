@@ -10,7 +10,7 @@ from load_image import load_image
 from image_set import Image_set
 from cnn_model import cnn_model
 from cluster import clustering
-from keras.preprocessing.image import ImageDataGenerator
+from keras.applications import MobileNetV2
 import streamlit as st
 from sklearn.mixture import GaussianMixture as GMM
 from sklearn.cluster import KMeans
@@ -20,6 +20,7 @@ import time
 import tqdm
 import pickle
 from PIL import Image
+import keras.backend.tensorflow_backend as tb
 
 
 @st.cache(persist=True)
@@ -42,23 +43,28 @@ def pars_arg():
     return args
 
 
-def df_maker(imgs, features, labels):
-    '''
-    create data frame to store clustering info
-    :return: data frame
-    '''
-    df = pd.DataFrame(df)
-    df['img', 'Real_Labls', 'img_ftrs'] = imgs
-    df['img_ftrs'] = features
-    df['Real_Labls'] = labels
-    print(df)
-    # df['img_ftrs'] = [feature[i, :] for i in range(len(feature[:, 0]))]
-    # df['Real_Labls'] = [labels[i].argmax() for i in range(len(feature[:, 0]))]
-    df = pd.DataFrame(df)
+@st.cache(suppress_st_warning=True)
+def cnn_modell(cnn_name, image_size):
 
-    df.head()
+    if cnn_name == 'MobileNetV2':
+        print(cnn_name, image_size)
+        model = MobileNetV2(include_top=False, weights='imagenet', input_shape=(image_size[0], image_size[1], 3))
+        print(model.summary())
+    elif cnn_name == 'ResNet50':
+        model = ResNet50(include_top=False, weights='imagenet',
+                         input_shape=(image_size[0], image_size[1], 3))
+    elif cnn_name == 'InceptionResNetV2':
+        model = InceptionResNetV2(include_top=False, weights='imagenet',
+                                  input_shape=(image_size[0], image_size[1], 3))
 
-    return df
+    out_lay = GlobalAveragePooling2D()(model.output)
+
+    # out_lay = Flatten()(model.output)
+
+    model = Model(inputs=model.input, outputs=out_lay)
+
+    return model
+
 
 
 def plot_():
@@ -90,10 +96,12 @@ def total_img_nums(path):
 
 
 def main():
+    tb._SYMBOLIC_SCOPE.value = True
+
     args = pars_arg()
 
     # sidebar title and logo
-    st.sidebar.title("L`ai'belNet\n An Automatic Image Labeling Tool")
+    st.sidebar.title("L`ai'belNet\n An AI-powered Image Labeling Tool")
 
     st.sidebar.image(Image.open('label.jpg').resize((240, 106)))
 
@@ -134,12 +142,17 @@ def main():
 
     st.pyplot()
 
-    cnn_dict = {'MobileNetV2': 0, 'ResNet50': 1, 'InceptionResNetV2': 2}
+    # analysis section
+    cnn_name = st.sidebar.selectbox('Select CNN Feature Extractor Model:', ['MobileNetV2', 'ResNet50',
+                                                                            'InceptionResNetV2'])
+    print(image_size)
 
-    cnn_name = st.sidebar.selectbox('Select CNN Feature Extractor Model:', list(cnn_dict))
-
+    print(cnn_name, image_size)
+    
     cnn_model_ = cnn_model(cnn_name, image_size)
 
+    cnn_model_.summary()
+    '''
     # images, labels = read_images(, image_size, args.mode)
 
     features = cnn_model_.predict(my_imageset.image_df['images'])
@@ -157,7 +170,7 @@ def main():
     plt.plot(np.arange(args.min_clustr, args.max_clustr), silhout['KMeans'], linestyle='-')
     plt.plot(np.arange(args.min_clustr, args.max_clustr), silhout['GMM'], linestyle='--')
     plt.show()
-
+    '''
 
 if __name__ == '__main__':
     main()

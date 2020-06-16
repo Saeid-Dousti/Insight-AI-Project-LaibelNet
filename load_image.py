@@ -1,5 +1,6 @@
 from PIL import Image
 
+
 def load_image(image_path, image_size):
     im = Image.open(image_path)
     w, h = im.size

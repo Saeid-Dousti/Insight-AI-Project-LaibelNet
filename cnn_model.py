@@ -1,3 +1,4 @@
+import streamlit as st
 from keras.applications import MobileNetV2
 from keras.applications import InceptionResNetV2
 from keras.applications import ResNet50
@@ -5,16 +6,18 @@ from keras.layers import GlobalAveragePooling2D
 from keras.models import Model
 
 
-def cnn_model(ftr_ext, image_size):
-    if ftr_ext == 0:
-        model = MobileNetV2(include_top=False, weights='imagenet',
-                            input_shape=(image_size[0], image_size[1], 3))
-    elif ftr_ext == 1:
+@st.cache(suppress_st_warning=True)
+def cnn_model(cnn_name, image_size):
+
+    if cnn_name == 'MobileNetV2':
+        model = MobileNetV2(include_top=False, weights='imagenet', input_shape=(image_size[0], image_size[1], 3))
+
+    elif cnn_name == 'ResNet50':
         model = ResNet50(include_top=False, weights='imagenet',
                          input_shape=(image_size[0], image_size[1], 3))
-    elif ftr_ext == 2:
+    elif cnn_name == 'InceptionResNetV2':
         model = InceptionResNetV2(include_top=False, weights='imagenet',
-                         input_shape=(image_size[0], image_size[1], 3))
+                                  input_shape=(image_size[0], image_size[1], 3))
 
     out_lay = GlobalAveragePooling2D()(model.output)
 
