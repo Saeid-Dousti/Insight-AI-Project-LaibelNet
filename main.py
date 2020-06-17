@@ -1,3 +1,4 @@
+#https://www.youtube.com/watch?v=FR-Q9dpMp7o&feature=youtu.be&hd=1
 import os
 import argparse
 from random import sample
@@ -24,7 +25,6 @@ import tqdm
 import pickle
 from PIL import Image
 import keras.backend.tensorflow_backend as tb
-
 
 
 # ---------------------------------------------------------------
@@ -103,7 +103,7 @@ def Disp_button_callback(path_name, my_imageset):
     st.markdown('Imageset Information Table:')
 
     st.dataframe(pd.DataFrame(list(zip(my_imageset.image_name, my_imageset.image_label, my_imageset.image_path)),
-                          columns=['image', 'sub-directory', 'Path']))
+                              columns=['image', 'sub-directory', 'Path']))
 
     # img_sel_index = st.sidebar.selectbox('Select an image index to display:', my_imageset.image_df.index)
 
@@ -118,6 +118,7 @@ def Disp_button_callback(path_name, my_imageset):
 
 def introduction():
     st.markdown(open('README.md').read())
+
 
 def main():
     tb._SYMBOLIC_SCOPE.value = True
@@ -152,48 +153,64 @@ def main():
     if Disp_button:
         Disp_button_callback(path_name, my_imageset)
 
-    grnd_trth_label = st.sidebar.checkbox('4) Are the sub-directories (in bar chart) GROUND TRUTH image labels?')
+    # grnd_trth_label = st.sidebar.checkbox('4) Are the sub-directories (in bar chart) GROUND TRUTH image labels?')
 
-    num_clstrs_known = st.sidebar.checkbox('5) Do you want imageset to cluster to a specific'
+    num_clstrs_known = st.sidebar.checkbox('4) Do you want imageset to cluster to a specific'
                                            ' number of clusters (labels)? \n (if not optimum number of'
                                            ' clusters will be discovered)')
 
     number_clstrs = None
 
     if num_clstrs_known:
-        number_clstrs = int(st.sidebar.text_input('5*) Enter number of clusters (label (Ex. data\Labled):',
+        number_clstrs = int(st.sidebar.text_input('4*) Enter number of clusters (label (Ex. data\Labled):',
                                                   len(set(my_imageset.image_label))))
 
     # analysis section
     cnn_name = st.sidebar.selectbox('Select CNN Feature Extractor Model:', ['MobileNetV2', 'ResNet50',
                                                                             'InceptionResNetV2'])
 
+    cluster_method = st.sidebar.selectbox('5) Select Clustering Method:', ['KMeans', 'Gaussian Mixture Model'])
+
     cluster_button = st.sidebar.button('Cluster', key=None)
 
-    if cluster_button:
+    if cluster_button or 1 == 1:
         features = feature_extraction(cnn_name, image_size, my_imageset.image_nparray)
 
         my_cluster = imageset_cluster(features, number_clstrs)
-        #print(my_cluster.kmns_clstrs, features)
-        st.markdown('Clusters based on method:')
 
-        cluster_df = pd.DataFrame(list(zip(my_imageset.image_name, my_imageset.image_path, my_cluster.kmns_clstrs, my_cluster.gmm_clstrs)),
-                          columns=['image', 'Path', 'KMeans Cluster', 'Gaussian Mixture Model Cluster'])
+        st.subheader(f'Clusters based on {cluster_method} method:')
+
+        if cluster_method == 'KMeans':
+            cluster_df = pd.DataFrame(
+                list(zip(my_imageset.image_name, my_imageset.image_path,
+                         my_cluster.kmns_clstrs)),
+                columns=['image', 'Path', 'Clusters'])
+
+        elif cluster_method == 'Gaussian Mixture Model':
+            cluster_df = pd.DataFrame(
+                list(zip(my_imageset.image_name, my_imageset.image_path,
+                         my_cluster.gmm_clstrs)),
+                columns=['image', 'Path', 'Clusters'])
 
         st.dataframe(cluster_df)
 
-        cluster_method = st.sidebar.selectbox('6) Select Clustering Method:', ['KMeans', 'Gaussian Mixture Model'])
+        num_sample_cluster = st.slider('6) Number of images from each cluster to display:', 1, 10, 3)
 
+        cluster_choice = st.selectbox('cluster to visualize:', list(set(cluster_df['Clusters'])))
 
+        cluster_img_path = list(cluster_df[cluster_df['Clusters'] == cluster_choice]['Path'])
 
-        #features = cnn_model_.predict(my_imageset.image_nparray)
+        st.image([Image.open(img).resize((150, 150))
+                  for img in sample(cluster_img_path, num_sample_cluster)])
 
-        #my_cluster = imageset_cluster(features, number_clstrs)
+        labels = st.text_input(f'7) Label of cluster {cluster_choice} to:', cluster_choice)
 
+        # features = cnn_model_.predict(my_imageset.image_nparray)
+
+        # my_cluster = imageset_cluster(features, number_clstrs)
 
 
 def main_1():
-
     features = cnn_model_.predict(my_imageset.image_nparray)
 
     my_cluster = imageset_cluster(features, number_clstrs)
