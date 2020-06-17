@@ -116,6 +116,9 @@ def Disp_button_callback(path_name, my_imageset):
     st.pyplot()
 
 
+def introduction():
+    st.markdown(open('README.md').read())
+
 def main():
     tb._SYMBOLIC_SCOPE.value = True
 
@@ -125,6 +128,11 @@ def main():
     st.sidebar.title("L`ai'belNet\n An AI-powered Image Labeling Tool")
 
     st.sidebar.image(Image.open('label.jpg').resize((240, 106)))
+
+    introduction_button = st.sidebar.button('Introduction', key=None)
+
+    if introduction_button:
+        introduction()
 
     path_name = st.sidebar.text_input('1) Enter imageset path (Ex. data\Labled):', args.data_path)
 
@@ -174,7 +182,7 @@ def main():
 
         st.dataframe(cluster_df)
 
-        cluster_method = st.selectbox('6) Select Clustering Method:', ['KMeans', 'Gaussian Mixture Model'])
+        cluster_method = st.sidebar.selectbox('6) Select Clustering Method:', ['KMeans', 'Gaussian Mixture Model'])
 
 
 
