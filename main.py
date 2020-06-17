@@ -1,6 +1,6 @@
 import os
 import argparse
-
+from random import sample
 import matplotlib
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,8 +10,8 @@ import seaborn as sns
 import numpy as np
 from load_image import load_image
 from image_set import Image_set
-from cnn_model import cnn_model
-from cluster import clustering2UNknown, clustering2known
+from feature_extraction import feature_extraction
+from cluster import imageset_cluster
 from keras.applications import MobileNetV2
 import streamlit as st
 from sklearn.manifold import TSNE
@@ -26,7 +26,7 @@ from PIL import Image
 import keras.backend.tensorflow_backend as tb
 
 
-@st.cache(persist=True)
+
 # ---------------------------------------------------------------
 
 # predefined variables
@@ -87,9 +87,33 @@ def tsne_plot(tsne_features, labels):
     st.pyplot()
 
 
-@st.cache(suppress_st_warning=True)
-def plot_df(df):
-    st.dataframe(df[['Name', 'sub-directory', 'Path']])
+def Disp_button_callback(path_name, my_imageset):
+    # display
+    st.markdown('Sample images from imageset **"' + path_name + '"** :')
+
+    st.image([Image.open(img).resize((150, 150))
+              for img in sample(my_imageset.image_path, 3)])
+
+    st.image([Image.open(img).resize((150, 150))
+              for img in sample(my_imageset.image_path, 3)])
+
+    st.image([Image.open(img).resize((150, 150))
+              for img in sample(my_imageset.image_path, 3)])
+
+    st.markdown('Imageset Information Table:')
+
+    st.dataframe(pd.DataFrame(list(zip(my_imageset.image_name, my_imageset.image_label, my_imageset.image_path)),
+                          columns=['image', 'sub-directory', 'Path']))
+
+    # img_sel_index = st.sidebar.selectbox('Select an image index to display:', my_imageset.image_df.index)
+
+    st.markdown('Imageset (sub-)directory count bar chart:')
+
+    fg = sns.countplot(my_imageset.image_label)
+
+    fg.set(xlabel='sub-directory', ylabel='image counts')
+
+    st.pyplot()
 
 
 def main():
@@ -106,7 +130,6 @@ def main():
 
     img_num = st.sidebar.slider('2) Number of images to analyze:', 2,
                                 total_img_nums(path_name), total_img_nums(path_name))
-
     if img_num == total_img_nums(path_name):
         img_num = None
 
@@ -114,31 +137,12 @@ def main():
 
     image_size = (img_res, img_res)
 
+    Disp_button = st.sidebar.button('Display', key=None)
+
     my_imageset = Image_set(path_name, image_size, img_num)
 
-    # display
-    st.markdown('Sample images from imageset **"' + path_name + '"** :')
-
-    st.image([Image.open(img).resize(image_size)
-              for img in my_imageset.image_df['Path'].sample(n=3, random_state=1)])
-
-    st.markdown('Imageset Information Table:')
-
-    plot_df(my_imageset.image_df)
-
-    img_sel_index = st.selectbox('Select an image index to display:', my_imageset.image_df.index)
-
-    img, sub_dir = my_imageset.image_df[['Path', 'sub-directory']].iloc[img_sel_index]
-
-    st.image(Image.open(img).resize(image_size), caption=sub_dir)
-
-    st.markdown('Imageset label counts:')
-
-    fg = sns.countplot(my_imageset.image_df['sub-directory'])
-
-    fg.set(xlabel='sub-directory', ylabel='image counts')
-
-    st.pyplot()
+    if Disp_button:
+        Disp_button_callback(path_name, my_imageset)
 
     grnd_trth_label = st.sidebar.checkbox('4) Are the sub-directories (in bar chart) GROUND TRUTH image labels?')
 
@@ -146,22 +150,49 @@ def main():
                                            ' number of clusters (labels)? \n (if not optimum number of'
                                            ' clusters will be discovered)')
 
-    if num_clstrs_known:
-        number_clstrs = st.sidebar.text_input( '5*) Enter number of clusters (label (Ex. data\Labled):',
-                                               len(set(my_imageset.image_df['Label Code']))  )
+    number_clstrs = None
 
+    if num_clstrs_known:
+        number_clstrs = int(st.sidebar.text_input('5*) Enter number of clusters (label (Ex. data\Labled):',
+                                                  len(set(my_imageset.image_label))))
 
     # analysis section
     cnn_name = st.sidebar.selectbox('Select CNN Feature Extractor Model:', ['MobileNetV2', 'ResNet50',
                                                                             'InceptionResNetV2'])
 
-    cnn_model_ = cnn_model(cnn_name, image_size)
+    cluster_button = st.sidebar.button('Cluster', key=None)
+
+    if cluster_button:
+        features = feature_extraction(cnn_name, image_size, my_imageset.image_nparray)
+
+        my_cluster = imageset_cluster(features, number_clstrs)
+        #print(my_cluster.kmns_clstrs, features)
+        st.markdown('Clusters based on method:')
+
+        cluster_df = pd.DataFrame(list(zip(my_imageset.image_name, my_imageset.image_path, my_cluster.kmns_clstrs, my_cluster.gmm_clstrs)),
+                          columns=['image', 'Path', 'KMeans Cluster', 'Gaussian Mixture Model Cluster'])
+
+        st.dataframe(cluster_df)
+
+        cluster_method = st.selectbox('6) Select Clustering Method:', ['KMeans', 'Gaussian Mixture Model'])
+
+
+
+        #features = cnn_model_.predict(my_imageset.image_nparray)
+
+        #my_cluster = imageset_cluster(features, number_clstrs)
+
+
+
+def main_1():
 
     features = cnn_model_.predict(my_imageset.image_nparray)
 
-    #if num_clstrs_known:
+    my_cluster = imageset_cluster(features, number_clstrs)
 
+    print(my_cluster.kmns_clstrs)
 
+    # if num_clstrs_known:
 
     # tsne_features = TSNE().fit_transform(features)
 

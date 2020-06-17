@@ -6,8 +6,9 @@ from keras.layers import GlobalAveragePooling2D
 from keras.models import Model
 
 
-@st.cache(suppress_st_warning=True)
-def cnn_model(cnn_name, image_size):
+@st.cache
+def feature_extraction(cnn_name, image_size, img):
+    print('saeid')
 
     if cnn_name == 'MobileNetV2':
         model = MobileNetV2(include_top=False, weights='imagenet', input_shape=(image_size[0], image_size[1], 3))
@@ -25,4 +26,4 @@ def cnn_model(cnn_name, image_size):
 
     model = Model(inputs=model.input, outputs=out_lay)
 
-    return model
+    return model.predict(img)

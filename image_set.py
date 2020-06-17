@@ -1,29 +1,26 @@
 import os
+import time
 import streamlit as st
 from load_image import load_image
-from PIL import Image
 import pandas as pd
 import numpy as np
 from sklearn import preprocessing
 
-@st.cache(suppress_st_warning=True)
-class Image_set():
 
+@st.cache
+class Image_set():
     def __init__(self, path, image_size, num_image=None):
         self.path = path
         self.image_size = image_size
         self.num_image = num_image
+        self.image_name = []
+        self.image_path = []
+        self.image_label = []
         self.image_nparray = []
-        self.image_df = []
         self.image_frame()
 
-
+    @st.cache
     def image_frame(self):
-
-        image_name = []
-        image_label = []
-        image_path = []
-        image_nparray = []
 
         if self.num_image is None:
             for root, _, files in os.walk(self.path):
@@ -31,10 +28,10 @@ class Image_set():
                     try:
                         temp_path = os.path.join(root, file)
                         temp = load_image(temp_path, self.image_size)
-                        image_nparray.append(np.array(temp) / 255.0)
-                        image_name.append(file)
-                        image_path.append(temp_path)
-                        image_label.append(root.split(os.sep)[-1])
+                        self.image_nparray.append(np.array(temp) / 255.0)
+                        self.image_name.append(file)
+                        self.image_path.append(temp_path)
+                        self.image_label.append(root.split(os.sep)[-1])
 
                     except:
                         print(f'--- {temp_path} is a none image file ---')
@@ -50,10 +47,10 @@ class Image_set():
                     try:
                         temp_path = os.path.join(root, file)
                         temp = load_image(temp_path, self.image_size)
-                        image_nparray.append(np.array(temp) / 255.0)
-                        image_name.append(file)
-                        image_path.append(temp_path)
-                        image_label.append(root.split(os.sep)[-1])
+                        self.image_nparray.append(np.array(temp) / 255.0)
+                        self.image_name.append(file)
+                        self.image_path.append(temp_path)
+                        self.image_label.append(root.split(os.sep)[-1])
 
                     except:
                         print(f'--- {temp_path} is a none image file ---')
@@ -63,14 +60,7 @@ class Image_set():
                         if loop >= self.num_image:
                             break
 
-        le = preprocessing.LabelEncoder()
-        le.fit(image_label)
 
-        self.image_nparray = np.asarray(image_nparray)
+        self.image_nparray = np.asarray(self.image_nparray)
 
-        df = pd.DataFrame(list(zip(np.arange(len(image_name)), image_name, image_label, image_path, image_nparray,
-                                   le.transform(image_label))),
-                          columns=['Index', 'Name', 'sub-directory', 'Path', 'NP_Array', 'Label Code'])
-
-        self.image_df = df
 
