@@ -120,6 +120,25 @@ def introduction():
     st.markdown(open('README.md').read())
 
 
+def loading(args):
+    st.sidebar.subheader('Load Images')
+
+    path_name = st.sidebar.text_input('1) Enter imageset path (Ex. data\Labled):', args.data_path)
+
+    img_num = st.sidebar.slider('2) Number of images to analyze:', 2,
+                                total_img_nums(path_name), total_img_nums(path_name))
+    if img_num == total_img_nums(path_name):
+        img_num = None
+
+    img_res = st.sidebar.slider('3) Image size to resize (224 recommended):', 30, 400, args.res)
+
+    image_size = (img_res, img_res)
+
+    my_imageset = Image_set(path_name, image_size, img_num)
+
+    st.dataframe(my_imageset.df)
+
+
 def main():
     tb._SYMBOLIC_SCOPE.value = True
 
@@ -135,26 +154,33 @@ def main():
     if introduction_button:
         introduction()
 
-    path_name = st.sidebar.text_input('1) Enter imageset path (Ex. data\Labled):', args.data_path)
+    #path_name = st.sidebar.text_input('1) Enter imageset path (Ex. data\Labled):', args.data_path)
 
-    img_num = st.sidebar.slider('2) Number of images to analyze:', 2,
-                                total_img_nums(path_name), total_img_nums(path_name))
-    if img_num == total_img_nums(path_name):
-        img_num = None
+    #img_num = st.sidebar.slider('2) Number of images to analyze:', 2,
+    #                            total_img_nums(path_name), total_img_nums(path_name))
+    # if img_num == total_img_nums(path_name):
+    #     img_num = None
+    #
+    # img_res = st.sidebar.slider('3) Image size to resize (224 recommended):', 30, 400, args.res)
+    #
+    # image_size = (img_res, img_res)
 
-    img_res = st.sidebar.slider('3) Image size to resize (224 recommended):', 30, 400, args.res)
-
-    image_size = (img_res, img_res)
-
-    Disp_button = st.sidebar.button('Display', key=None)
-
-    my_imageset = Image_set(path_name, image_size, img_num)
-
-    if Disp_button:
-        Disp_button_callback(path_name, my_imageset)
+    # Disp_button = st.sidebar.button('Display', key=None)
+    #
+    # my_imageset = Image_set(path_name, image_size, img_num)
+    #
+    # if Disp_button:
+    #     Disp_button_callback(path_name, my_imageset)
 
     # grnd_trth_label = st.sidebar.checkbox('4) Are the sub-directories (in bar chart) GROUND TRUTH image labels?')
 
+    loading(args)
+
+    Disp_button = st.sidebar.button('Display', key=None)
+
+    if Disp_button:
+        Disp_button_callback(path_name, my_imageset)
+'''
     num_clstrs_known = st.sidebar.checkbox('4) Do you want imageset to cluster to a specific'
                                            ' number of clusters (labels)? \n (if not optimum number of'
                                            ' clusters will be discovered)')
@@ -208,7 +234,7 @@ def main():
         # features = cnn_model_.predict(my_imageset.image_nparray)
 
         # my_cluster = imageset_cluster(features, number_clstrs)
-
+'''
 
 def main_1():
     features = cnn_model_.predict(my_imageset.image_nparray)
