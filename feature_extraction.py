@@ -8,8 +8,6 @@ from keras.models import Model
 
 @st.cache
 def feature_extraction(cnn_name, image_size, img):
-    print('saeid')
-
     if cnn_name == 'MobileNetV2':
         model = MobileNetV2(include_top=False, weights='imagenet', input_shape=(image_size[0], image_size[1], 3))
 

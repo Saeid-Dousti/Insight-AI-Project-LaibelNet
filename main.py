@@ -1,27 +1,19 @@
-#https://www.youtube.com/watch?v=FR-Q9dpMp7o&feature=youtu.be&hd=1
+#https://www.youtube.com/watch?v=TNdMeh0DcHQ&feature=youtu.be&hd=1
 import os
 import argparse
 from random import sample
 import matplotlib
 import pandas as pd
 import matplotlib.pyplot as plt
-import tensorflow as tf
 from matplotlib import rcParams
 import seaborn as sns
 import numpy as np
-from load_image import load_image
-from image_set import Image_set
+from image_set import imageset_dataframe
 from feature_extraction import feature_extraction
 from cluster import imageset_cluster
-from keras.applications import MobileNetV2
 import streamlit as st
 from sklearn.manifold import TSNE
-from sklearn.mixture import GaussianMixture as GMM
-from sklearn.cluster import KMeans
-from sklearn.cluster import DBSCAN
-import keras
-import time
-import tqdm
+from sklearn.metrics.cluster import homogeneity_score, completeness_score, v_measure_score
 import pickle
 from PIL import Image
 import keras.backend.tensorflow_backend as tb
@@ -78,40 +70,27 @@ def tsne_plot(tsne_features, labels):
     matplotlib.rc('image', cmap='jet')
 
     plt.figure(figsize=(8, 6), dpi=100)
-    plt.scatter(tsne_features[:, 0], tsne_features[:, 1], c=labels, edgecolors='none')
+    sns.scatterplot(x='t-SNE one', y='t-SNE two', hue=labels, data=tsne_features,
+                    palette=sns.color_palette("hls", len(list(set(labels)))), alpha=1, s=55)
     # plt.title(os.path.splitext(tsne_features_path)[0])
-    plt.title('t-SNE plot')
-    plt.colorbar()
-    plt.show()
 
     st.pyplot()
 
 
-def Disp_button_callback(path_name, my_imageset):
-    # display
-    st.markdown('Sample images from imageset **"' + path_name + '"** :')
-
-    st.image([Image.open(img).resize((150, 150))
-              for img in sample(my_imageset.image_path, 3)])
-
-    st.image([Image.open(img).resize((150, 150))
-              for img in sample(my_imageset.image_path, 3)])
-
-    st.image([Image.open(img).resize((150, 150))
-              for img in sample(my_imageset.image_path, 3)])
-
-    st.markdown('Imageset Information Table:')
-
-    st.dataframe(pd.DataFrame(list(zip(my_imageset.image_name, my_imageset.image_label, my_imageset.image_path)),
-                              columns=['image', 'sub-directory', 'Path']))
-
-    # img_sel_index = st.sidebar.selectbox('Select an image index to display:', my_imageset.image_df.index)
-
-    st.markdown('Imageset (sub-)directory count bar chart:')
-
-    fg = sns.countplot(my_imageset.image_label)
-
-    fg.set(xlabel='sub-directory', ylabel='image counts')
+def silhouette_plot(cluster):
+    plt.figure(figsize=(8, 5))
+    plt.plot(np.arange(cluster.min_clustr, cluster.max_clustr), cluster.kmns_silhout_range, linestyle='-')
+    plt.plot(np.arange(cluster.min_clustr, cluster.max_clustr), cluster.gmm_silhout_range, linestyle='--')
+    plt.legend(shadow=True, labels=['KMeans', 'GMM'])
+    k = cluster.kmns_num_clstrs
+    plt.axvline(x=k, linestyle='--', c='green', label=f'Optimal number of clusters({k})')
+    plt.scatter(k, cluster.kmns_silhout, c='red', s=200)
+    k = cluster.gmm_num_clstrs
+    plt.axvline(x=k, linestyle='--', c='green', label=f'Optimal number of clusters({k})')
+    plt.scatter(k, cluster.gmm_silhout, c='red', s=200)
+    plt.xlabel("$Num. of Clusters$", fontsize=14)
+    plt.ylabel("$ave.~Silhoutte score$", fontsize=14, family='Arial')
+    plt.grid(True)
 
     st.pyplot()
 
@@ -120,158 +99,306 @@ def introduction():
     st.markdown(open('README.md').read())
 
 
-def loading(args):
-    st.sidebar.subheader('Load Images')
+def section_zero():
+    # sidebar title and logo
+    st.sidebar.title("L`ai'belNet\n _An AI-powered Image Labeling Tool_")
 
-    path_name = st.sidebar.text_input('1) Enter imageset path (Ex. data\Labled):', args.data_path)
+    st.sidebar.image(Image.open('label.jpg').resize((240, 106)))
 
-    img_num = st.sidebar.slider('2) Number of images to analyze:', 2,
-                                total_img_nums(path_name), total_img_nums(path_name))
-    if img_num == total_img_nums(path_name):
-        img_num = None
 
-    img_res = st.sidebar.slider('3) Image size to resize (224 recommended):', 30, 400, args.res)
+def section_one(args):
+
+    st.subheader('Load Imageset')
+
+    path_name = st.text_input('Enter imageset path (Ex. data\Labled):', args.data_path)
+
+    img_num = st.slider('Number of images to analyze:', 2,
+                        total_img_nums(path_name), total_img_nums(path_name))
+
+    img_res = st.slider('Image size to resize (224 recommended):', 30, 400, args.res)
 
     image_size = (img_res, img_res)
 
-    my_imageset = Image_set(path_name, image_size, img_num)
+    Load_imageset_button = st.button('Load Imageset', key=None)
 
-    st.dataframe(my_imageset.df)
+    if Load_imageset_button:
+
+        if os.path.exists('pickle_folder/label_dict.pickle'):
+            os.remove('pickle_folder/label_dict.pickle')
+
+        st.markdown('Imageset summary table:')
+
+        imageset_df = imageset_dataframe(path_name, image_size, img_num)
+
+        if not os.path.exists('pickle_folder'):
+            os.makedirs('pickle_folder')
+
+        # save dataframe
+        imageset_df.to_pickle(os.path.join('pickle_folder', 'imageset_df.pickle'))
+
+        with open(os.path.join('pickle_folder', 'args.pickle'), 'wb') as f:
+            pickle.dump({'image_size': image_size, 'img_num': img_num}, f)
+
+        st.dataframe(imageset_df)
+
+
+def section_two():
+    st.subheader('Imageset Visualization')
+    # loading
+    imageset_df = pd.read_pickle(os.path.join('pickle_folder', 'imageset_df.pickle'))
+
+    st.markdown('Imageset summary table:')
+    st.dataframe(imageset_df)
+
+    st.markdown('Imageset samples:')
+    for i in range(3):
+        st.image([Image.open(img).resize((150, 150))
+                  for img in sample(list(imageset_df['Path']), 3)])
+
+    st.markdown('Imageset Information Table:')
+
+    st.markdown('Imageset (sub-)directory count bar chart:')
+
+    fg = sns.countplot(imageset_df['Sub-directory'])
+
+    fg.set(xlabel='sub-directory', ylabel='image counts')
+
+    st.pyplot()
+
+    gt = st.checkbox('Are the sub-directories Ground Truth Labels?')
+
+    with open(os.path.join('pickle_folder', 'ground_truth_labels.pickle'), 'wb') as f:
+        pickle.dump(list(imageset_df['Sub-directory'].unique()), f)
+
+    img_sel = st.selectbox('Select an image name to display:', list(imageset_df['Image']))
+
+    img_path, cap = imageset_df[['Path', 'Sub-directory']][imageset_df['Image'] == img_sel].iloc[0]
+
+    st.image(Image.open(img_path).resize((150, 150)), caption=cap)
+
+
+def section_three():
+    st.subheader('Cluster Imageset')
+
+    imageset_df = pd.read_pickle(os.path.join('pickle_folder', 'imageset_df.pickle'))
+
+    with open(os.path.join('pickle_folder', 'ground_truth_labels.pickle'), 'rb') as f:
+        known_gt_labels = pickle.load(f)
+
+    with open(os.path.join('pickle_folder', 'args.pickle'), 'rb') as f:
+        args = pickle.load(f)
+
+    image_size = args['image_size']
+    img_num = args['img_num']
+
+    num_clstrs_known = st.markdown('If a desired number of clusters is not known a priori'
+                                   ' an optimum number of clusters will be discovered automatically')
+
+    if st.checkbox('known number of clusters'):
+        num_clstrs = int(st.text_input('number of clusters', str(len(known_gt_labels))))
+        min_num_clstrs, max_num_clstrs = None, None
+    else:
+        num_clstrs = None
+        st.markdown('Range of min and Max cluster numbers to search optimum number of clusters:'
+                    '\n (a wide search range can be computationally expensive and time consuming)')
+        min_num_clstrs = int(st.text_input('min number of clusters', '4'))
+        max_num_clstrs = int(st.text_input('max number of clusters', '7'))
+
+    # analysis section
+    cnn_name = st.selectbox('Select CNN Feature Extractor Model:', ['MobileNetV2', 'ResNet50',
+                                                                    'InceptionResNetV2'])
+
+    cluster_button = st.button('Run Clustering', key=None)
+
+    if cluster_button:
+        features = feature_extraction(cnn_name, image_size, np.array(list(imageset_df['Image_np'])))
+
+        my_cluster = imageset_cluster(features, num_clstrs, min_num_clstrs, max_num_clstrs)
+
+        with open(os.path.join('pickle_folder', 'cluster_class.pickle'), 'wb') as f:
+            pickle.dump(my_cluster, f)
+
+
+def section_four():
+    st.subheader('Cluster Visualization and Imageset Labeling')
+
+    # load data
+    with open(os.path.join('pickle_folder', 'cluster_class.pickle'), 'rb') as f:
+        my_cluster = pickle.load(f)
+    imageset_df = pd.read_pickle(os.path.join('pickle_folder', 'imageset_df.pickle'))
+
+    if not os.path.exists(os.path.join('pickle_folder', 'label_dict.pickle')):
+        label_dict = dict()
+    else:
+        with open(os.path.join('pickle_folder', 'label_dict.pickle'), 'rb') as f:
+            label_dict = pickle.load(f)
+
+    st.markdown(f'Number of clusters based on **KMeans** method: {my_cluster.kmns_num_clstrs}')
+    st.markdown(f'Number of clusters based on **GMM** method: {my_cluster.gmm_num_clstrs}')
+
+    labeled_cluster_df = imageset_df[['Image', 'Path']]
+    labeled_cluster_df['KMean_Clusters'] = my_cluster.kmns_clstrs
+    labeled_cluster_df['GMM_Clusters'] = my_cluster.gmm_clstrs
+
+    cluster_method = st.selectbox('Select Clustering Method to Label Imageset:', ['KMeans', 'Gaussian Mixture Model'])
+
+    if cluster_method == 'KMeans':
+        labeled_cluster_df['Cluster'] = labeled_cluster_df['KMean_Clusters']
+    elif cluster_method == 'Gaussian Mixture Model':
+        labeled_cluster_df['Cluster'] = labeled_cluster_df['GMM_Clusters']
+
+    labeled_cluster_df['Label'] = labeled_cluster_df['Cluster']
+
+    num_sample_cluster = st.slider('Number of images from each cluster to display:', 1, 60, 3)
+
+    cluster_choice = st.selectbox('cluster to visualize:', list(set(labeled_cluster_df['Cluster'])))
+
+    cluster_img_path = list(labeled_cluster_df[labeled_cluster_df['Cluster'] == cluster_choice]['Path'])
+
+    st.image([Image.open(img).resize((150, 150))
+              for img in sample(cluster_img_path, num_sample_cluster)])
+
+    try:
+        label = st.text_input(f'You may label cluster **{cluster_choice}** as:', label_dict[cluster_choice])
+    except:
+        label = st.text_input(f'You may label cluster **{cluster_choice}** as:', None)
+
+    if label != 'None':
+        label_dict[cluster_choice] = label
+        with open(os.path.join('pickle_folder', 'label_dict.pickle'), 'wb') as f:
+            pickle.dump(label_dict, f)
+
+    st.write(label_dict)
+
+    label_button = st.button('label Imageset')
+
+    if label_button:
+        for key, label_name in label_dict.items():
+            labeled_cluster_df['Label'][labeled_cluster_df['Cluster'] == key] = label_name
+
+        st.markdown(f'Labeled based on {cluster_method}:')
+        st.dataframe(labeled_cluster_df[['Image', 'Path', 'Cluster', 'Label']])
+
+        st.markdown(f'Imageset clusters based on both approaches:')
+        st.dataframe(labeled_cluster_df)
+
+        with open(os.path.join('pickle_folder', 'labeled_cluster_df.pickle'), 'wb') as f:
+            pickle.dump(labeled_cluster_df, f)
+
+        with open(os.path.join('pickle_folder', 'cluster_method.pickle'), 'wb') as f:
+            pickle.dump(cluster_method, f)
+
+
+def section_five():
+    st.subheader('Cluster Visualization and Imageset Labeling')
+
+    # loading
+    with open(os.path.join('pickle_folder', 'cluster_method.pickle'), 'rb') as f:
+        cluster_method = pickle.load(f)
+    with open(os.path.join('pickle_folder', 'cluster_class.pickle'), 'rb') as f:
+        my_cluster = pickle.load(f)
+    with open(os.path.join('pickle_folder', 'labeled_cluster_df.pickle'), 'rb') as f:
+        labeled_cluster_df = pickle.load(f)
+    imageset_df = pd.read_pickle(os.path.join('pickle_folder', 'imageset_df.pickle'))
+
+    st.markdown(f'Labeled based on {cluster_method}:')
+    st.write(labeled_cluster_df)
+
+    features = my_cluster.features
+
+    gt_checkbox = st.checkbox('Are the sub-directories(see "Visualize Imageset" sec.) Ground Truth Labels?')
+    # loading
+    with open(os.path.join('pickle_folder', 'ground_truth_labels.pickle'), 'rb') as f:
+        known_gt_labels = pickle.load(f)
+
+    features_embedded = TSNE(n_components=2, random_state=1).fit_transform(features)
+
+    silhouette_plot(my_cluster)
+
+    if gt_checkbox:
+
+        comp_label_df = pd.DataFrame()
+        comp_label_df['Image'] = imageset_df['Image']
+        comp_label_df['Ground Truth Label'] = imageset_df['Sub-directory']
+        comp_label_df['Discovered Label'] = labeled_cluster_df['Label']
+
+        st.markdown("L`ai'belNet labels vs. Ground Truth labels:")
+        st.write(comp_label_df)
+
+        st.markdown('Clustering quality measures compared to Ground Truth labels:')
+
+
+    st.markdown('**- H (homogeneity)**: _A clustering result satisfies homogeneity if all of'
+                ' its clusters contain only data points which are members of a single class._')
+    st.markdown('**- C (completeness)**: _A clustering result satisfies completeness if all the data points that are '
+                'members of a given class are elements of the same cluster._')
+    st.markdown('**- V**: v_measure score is the harmonic mean between homogeneity and completeness')
+    st.latex(r'''\frac{1}{V} = \frac{1}{C} + \frac{1}{H}''')
+
+    measures_df = st.write(pd.DataFrame([[homogeneity_score(comp_label_df['Ground Truth Label'],
+                                                            labeled_cluster_df['KMean_Clusters']),
+                                          completeness_score(comp_label_df['Ground Truth Label'],
+                                                             labeled_cluster_df['KMean_Clusters']),
+                                          v_measure_score(comp_label_df['Ground Truth Label'],
+                                                          labeled_cluster_df['KMean_Clusters'])],
+                                         [homogeneity_score(comp_label_df['Ground Truth Label'],
+                                                            labeled_cluster_df['GMM_Clusters']),
+                                          completeness_score(comp_label_df['Ground Truth Label'],
+                                                             labeled_cluster_df['GMM_Clusters']),
+                                          v_measure_score(comp_label_df['Ground Truth Label'],
+                                                          labeled_cluster_df['GMM_Clusters'])]],
+                                        columns=['Homogeneity', 'Completeness', 'V_measure'],
+                                        index=['KMeans', 'GMM']))
+
+    st.markdown('t-SNE plot based on discovered labels:')
+    tsne_plot(pd.DataFrame(features_embedded, columns=['t-SNE one', 't-SNE two']), labeled_cluster_df['Label'])
+
+    if gt_checkbox:
+        st.markdown('t-SNE plot based on Ground Truth labels:')
+        tsne_plot(pd.DataFrame(features_embedded, columns=['t-SNE one', 't-SNE two']),
+                  imageset_df['Sub-directory'])
+
+
 
 
 def main():
     tb._SYMBOLIC_SCOPE.value = True
 
+    section_zero()
     args = pars_arg()
 
-    # sidebar title and logo
-    st.sidebar.title("L`ai'belNet\n An AI-powered Image Labeling Tool")
-
-    st.sidebar.image(Image.open('label.jpg').resize((240, 106)))
-
-    introduction_button = st.sidebar.button('Introduction', key=None)
+    introduction_button = st.sidebar.checkbox('1) Introduction', key=None)
 
     if introduction_button:
         introduction()
 
-    #path_name = st.sidebar.text_input('1) Enter imageset path (Ex. data\Labled):', args.data_path)
+    load_select = st.sidebar.checkbox('2) Load Imageset', key=None)
 
-    #img_num = st.sidebar.slider('2) Number of images to analyze:', 2,
-    #                            total_img_nums(path_name), total_img_nums(path_name))
-    # if img_num == total_img_nums(path_name):
-    #     img_num = None
-    #
-    # img_res = st.sidebar.slider('3) Image size to resize (224 recommended):', 30, 400, args.res)
-    #
-    # image_size = (img_res, img_res)
+    if load_select:
+        section_one(args)
 
-    # Disp_button = st.sidebar.button('Display', key=None)
-    #
-    # my_imageset = Image_set(path_name, image_size, img_num)
-    #
-    # if Disp_button:
-    #     Disp_button_callback(path_name, my_imageset)
+    vis_select = st.sidebar.checkbox('3) Visualize Imageset', key=None)
 
-    # grnd_trth_label = st.sidebar.checkbox('4) Are the sub-directories (in bar chart) GROUND TRUTH image labels?')
+    if vis_select:
+        section_two()
 
-    loading(args)
+    cluster_select = st.sidebar.checkbox('4) Cluster Imageset', key=None)
 
-    Disp_button = st.sidebar.button('Display', key=None)
+    if cluster_select:
+        section_three()
 
-    if Disp_button:
-        Disp_button_callback(path_name, my_imageset)
-'''
-    num_clstrs_known = st.sidebar.checkbox('4) Do you want imageset to cluster to a specific'
-                                           ' number of clusters (labels)? \n (if not optimum number of'
-                                           ' clusters will be discovered)')
+    vis_cluster_select = st.sidebar.checkbox('5) Vis. Clusters & Label Imageset', key=None)
 
-    number_clstrs = None
+    if vis_cluster_select:
+        section_four()
 
-    if num_clstrs_known:
-        number_clstrs = int(st.sidebar.text_input('4*) Enter number of clusters (label (Ex. data\Labled):',
-                                                  len(set(my_imageset.image_label))))
+    performance_select = st.sidebar.checkbox('6) Clustering Performance Analytics', key=None)
 
-    # analysis section
-    cnn_name = st.sidebar.selectbox('Select CNN Feature Extractor Model:', ['MobileNetV2', 'ResNet50',
-                                                                            'InceptionResNetV2'])
+    if performance_select:
+        section_five()
 
-    cluster_method = st.sidebar.selectbox('5) Select Clustering Method:', ['KMeans', 'Gaussian Mixture Model'])
-
-    cluster_button = st.sidebar.button('Cluster', key=None)
-
-    if cluster_button or 1 == 1:
-        features = feature_extraction(cnn_name, image_size, my_imageset.image_nparray)
-
-        my_cluster = imageset_cluster(features, number_clstrs)
-
-        st.subheader(f'Clusters based on {cluster_method} method:')
-
-        if cluster_method == 'KMeans':
-            cluster_df = pd.DataFrame(
-                list(zip(my_imageset.image_name, my_imageset.image_path,
-                         my_cluster.kmns_clstrs)),
-                columns=['image', 'Path', 'Clusters'])
-
-        elif cluster_method == 'Gaussian Mixture Model':
-            cluster_df = pd.DataFrame(
-                list(zip(my_imageset.image_name, my_imageset.image_path,
-                         my_cluster.gmm_clstrs)),
-                columns=['image', 'Path', 'Clusters'])
-
-        st.dataframe(cluster_df)
-
-        num_sample_cluster = st.slider('6) Number of images from each cluster to display:', 1, 10, 3)
-
-        cluster_choice = st.selectbox('cluster to visualize:', list(set(cluster_df['Clusters'])))
-
-        cluster_img_path = list(cluster_df[cluster_df['Clusters'] == cluster_choice]['Path'])
-
-        st.image([Image.open(img).resize((150, 150))
-                  for img in sample(cluster_img_path, num_sample_cluster)])
-
-        labels = st.text_input(f'7) Label of cluster {cluster_choice} to:', cluster_choice)
-
-        # features = cnn_model_.predict(my_imageset.image_nparray)
-
-        # my_cluster = imageset_cluster(features, number_clstrs)
-'''
-
-def main_1():
-    features = cnn_model_.predict(my_imageset.image_nparray)
-
-    my_cluster = imageset_cluster(features, number_clstrs)
-
-    print(my_cluster.kmns_clstrs)
-
-    # if num_clstrs_known:
-
-    # tsne_features = TSNE().fit_transform(features)
-
-    # tsne_plot(tsne_features, list(my_imageset.image_df['sub-directory']))
-
-    img_res = st.sidebar.slider('Number of clusters:', args.min_clustr, args.max_clustr, 6)
-
-    silhout, opt_clustr, optimized_model = clustering(features, args.min_clustr, args.max_clustr)
-
-    '''
-    # images, labels = read_images(, image_size, args.mode)
-
-    features = cnn_model_.predict(my_imageset.image_df['images'])
-
-    print(images.shape, labels, cnn_model_, features.shape)
-
-    # df_maker(images, features, labels)
-
-    silhout, opt_clustr, optimized_model = clustering(features, args.min_clustr, args.max_clustr)
-
-    print(silhout)
-    print(opt_clustr)
-
-    plt.figure()
-    plt.plot(np.arange(args.min_clustr, args.max_clustr), silhout['KMeans'], linestyle='-')
-    plt.plot(np.arange(args.min_clustr, args.max_clustr), silhout['GMM'], linestyle='--')
-    plt.show()
-    '''
+    st.sidebar.markdown('**_For optimum performance keep '
+                        'only one section active/visible at a time_**')
 
 
 if __name__ == '__main__':
