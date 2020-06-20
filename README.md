@@ -1,6 +1,6 @@
 # L`ai'belNet 
 An AI-powered Image Labeling Tool
-![](./label.jpg =240x106)
+![](label.jpg =240x106)
 
 Framework for machine learning projects at Insight Atrificial Intelegence summer of 2020.
 
