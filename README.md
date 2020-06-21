@@ -15,7 +15,7 @@ In this project, I am proposing an unsupervised approach to label image data for
 **_L`ai'belNet_** is a Steamlit app and uses either of KMeans or Gaussian Mixture Model based on user's choice to cluster imageset into groups of more similar images. User can specify the number of clusters or have the app to find the optimum number of clusters. Next a few samples from each cluster is randomly selected so user can discover their labels. Finally, all the images of each cluster are labeled with the cluster's respective label discovered via its samples. 
 
 ## Data
-This tool can process both labled and/or unlabeled image sets. Labeled images are used for ground truth performance evaluation of the model. Images in "Unlabeled" directory are used for performing the labeling/clustering task.
+**_L`ai'belNet_** allows user to provide path to the image directory, e.g., _"data"_. All the image type files contain in the  
 
 ```
 --\data
