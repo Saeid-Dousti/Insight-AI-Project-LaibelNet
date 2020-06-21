@@ -1,7 +1,8 @@
 <p align="right">
   <img src="logo.jpg">
 </p>
-# L`ai'belNet        <img style="float: right;" src="label.jpg">         
+
+# L`ai'belNet               
 An AI-powered Image Labeling Tool
 
 <p align="right">
