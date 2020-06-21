@@ -12,7 +12,7 @@ An AI-powered Image Labeling Tool
 Labeling images is an initial and essential step in training computer vision algorithms.  This has offered great business opportunities. Labeling images is currently done mainly manually, and companies are actively looking for methods to accelerate this process and make it faster, cheaper, more profitable. 
 In this project, I am proposing an unsupervised approach to label image data for computer vision based on common clustering methods.
 
-**_L`ai'belNet_** is a Steamlit app and uses either of KMeans or Gaussian Mixture Model based on user choice to cluster imageset into groups of more similar images. User can specify the number of clusters or have the app to find the optimum number of clusters. Next a few samples from each cluster is randomly selected so user can discover their label. Finally, all the images of each cluster is labeled with the respective discovered label. 
+**_L`ai'belNet_** is a Steamlit app and uses either of KMeans or Gaussian Mixture Model based on user's choice to cluster imageset into groups of more similar images. User can specify the number of clusters or have the app to find the optimum number of clusters. Next a few samples from each cluster is randomly selected so user can discover their label. Finally, all the images of each cluster is labeled with the respective discovered label. 
 
 ## Data
 This tool can process both labled and/or unlabeled image sets. Labeled images are used for ground truth performance evaluation of the model. Images in "Unlabeled" directory are used for performing the labeling/clustering task.
