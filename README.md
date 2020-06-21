@@ -1,5 +1,4 @@
-# L`ai'belNet 
-<p align="right">
+# L`ai'belNet <p align="right">
   <img src="logo.jpg">
 </p>
               
