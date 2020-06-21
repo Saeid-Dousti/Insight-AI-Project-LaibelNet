@@ -1,7 +1,12 @@
-![image alt ><](label.jpg)
+<p align="right">
+  <img src="logo.jpg">
+</p>
 # L`ai'belNet        <img style="float: right;" src="label.jpg">         
 An AI-powered Image Labeling Tool
 
+<p align="right">
+  <img src="LaibelNet.gif">
+</p>
 
 Framework for machine learning projects at Insight Atrificial Intelegence summer of 2020.
 
