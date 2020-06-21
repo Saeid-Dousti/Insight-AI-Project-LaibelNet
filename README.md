@@ -1,5 +1,5 @@
 ![](label.jpg)
-# L`ai'belNet                 
+# L`ai'belNet        <img style="float: right;" src="label.jpg">         
 An AI-powered Image Labeling Tool
 
 
