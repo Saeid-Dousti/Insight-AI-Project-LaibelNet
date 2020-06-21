@@ -19,8 +19,6 @@ This tool can process both labled and/or unlabeled image sets. Labeled images ar
 
 ```
 --\data
-  |
-  --\Labeled
   |    |  
   |    --\class 1
   |    |  (images)
@@ -31,8 +29,7 @@ This tool can process both labled and/or unlabeled image sets. Labeled images ar
   |    |...  
   |    --\class n
   |       (images)
-  --\Unlabeld 
-     (images)
+  -- (images)
 
 ```
 
