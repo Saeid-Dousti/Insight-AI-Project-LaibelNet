@@ -1,4 +1,6 @@
-# L`ai'belNet <p align="right">  <img src="logo.jpg"> </p>
+<p align="center">  <img src="logo.jpg"> </p>
+
+# L`ai'belNet 
               
 An AI-powered Image Labeling Tool
 
