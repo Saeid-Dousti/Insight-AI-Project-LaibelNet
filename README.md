@@ -8,10 +8,9 @@ An AI-powered Image Labeling Tool
   <img src="LaibelNet.gif">
 </p>
 
-Framework for machine learning projects at Insight Atrificial Intelegence summer of 2020.
-
 ## Motivation for this project
-Labeling new data can be a tedious and challenging task. This project aims to create a framework for discovering new labels using already labeled data within a particular taxonomy. As a concrete example, let’s say the user has a dataset of bird pictures, partially annotated with labels for eagle, parrot and swallow, however the dataset also contains pictures of hummingbirds and owls. The goal is to leverage the structure in the data annotated as eagle/parrot/swallow to discover the new concepts of hummingbird and owl in the unlabeled data.
+Labeling images is an initial and essential step in training computer vision algorithms.  This has offered great business opportunities. Labeling images is currently done mainly manually, and companies are actively looking for methods to accelerate this process and make it faster, cheaper, more profitable. 
+In this project, I am proposing an unsupervised approach to label image data for computer vision based on common clustering methods. **_L`ai'belNet_**
 
 ## Data
 This tool can process both labled and/or unlabeled image sets. Labeled images are used for ground truth performance evaluation of the model. Images in "Unlabeled" directory are used for performing the labeling/clustering task.
