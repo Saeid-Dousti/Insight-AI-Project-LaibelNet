@@ -1,11 +1,11 @@
+# L`ai'belNet 
 <p align="right">
   <img src="logo.jpg">
 </p>
-
-# L`ai'belNet               
+              
 An AI-powered Image Labeling Tool
 
-<p align="right">
+<p align="center">
   <img src="LaibelNet.gif">
 </p>
 
