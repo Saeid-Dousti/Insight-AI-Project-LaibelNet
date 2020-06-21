@@ -1,4 +1,4 @@
-<p align="left">  <img src="logo.jpg" width="50" height="22"> </p>
+<p align="left">  <img src="logo.jpg" width="60" height="30"> </p>
 
 # L`ai'belNet 
               
