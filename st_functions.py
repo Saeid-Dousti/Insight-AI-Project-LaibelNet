@@ -78,7 +78,7 @@ def section_zero():
     # sidebar title and logo
     st.sidebar.title("L`ai'belNet\n _An AI-powered Image Labeling Tool_")
 
-    st.sidebar.image(Image.open('logo.jpg').resize((240, 106)))
+    st.sidebar.image(Image.open('config\logo.jpg').resize((240, 106)))
 
 
 def section_one(args):
@@ -97,20 +97,20 @@ def section_one(args):
 
     if Load_imageset_button:
 
-        if os.path.exists('pickle_folder/label_dict.pickle'):
-            os.remove('pickle_folder/label_dict.pickle')
+        if os.path.exists('pickledir/label_dict.pickle'):
+            os.remove('pickledir/label_dict.pickle')
 
         st.markdown('Imageset summary table:')
 
         imageset_df = imageset_dataframe(path_name, image_size, img_num)
 
-        if not os.path.exists('pickle_folder'):
-            os.makedirs('pickle_folder')
+        if not os.path.exists('pickledir'):
+            os.makedirs('pickledir')
 
         # save dataframe
-        imageset_df.to_pickle(os.path.join('pickle_folder', 'imageset_df.pickle'))
+        imageset_df.to_pickle(os.path.join('pickledir', 'imageset_df.pickle'))
 
-        with open(os.path.join('pickle_folder', 'args.pickle'), 'wb') as f:
+        with open(os.path.join('pickledir', 'args.pickle'), 'wb') as f:
             pickle.dump({'image_size': image_size, 'img_num': img_num}, f)
 
         st.dataframe(imageset_df)
@@ -119,7 +119,7 @@ def section_one(args):
 def section_two():
     st.subheader('Imageset Visualization')
     # loading
-    imageset_df = pd.read_pickle(os.path.join('pickle_folder', 'imageset_df.pickle'))
+    imageset_df = pd.read_pickle(os.path.join('pickledir', 'imageset_df.pickle'))
 
     st.markdown('Imageset summary table:')
     st.dataframe(imageset_df)
@@ -141,7 +141,7 @@ def section_two():
 
     gt = st.checkbox('Are the sub-directories Ground Truth Labels?')
 
-    with open(os.path.join('pickle_folder', 'ground_truth_labels.pickle'), 'wb') as f:
+    with open(os.path.join('pickledir', 'ground_truth_labels.pickle'), 'wb') as f:
         pickle.dump(list(imageset_df['Sub-directory'].unique()), f)
 
     img_sel = st.selectbox('Select an image name to display:', list(imageset_df['Image']))
@@ -154,12 +154,12 @@ def section_two():
 def section_three():
     st.subheader('Cluster Imageset')
 
-    imageset_df = pd.read_pickle(os.path.join('pickle_folder', 'imageset_df.pickle'))
+    imageset_df = pd.read_pickle(os.path.join('pickledir', 'imageset_df.pickle'))
 
-    with open(os.path.join('pickle_folder', 'ground_truth_labels.pickle'), 'rb') as f:
+    with open(os.path.join('pickledir', 'ground_truth_labels.pickle'), 'rb') as f:
         known_gt_labels = pickle.load(f)
 
-    with open(os.path.join('pickle_folder', 'args.pickle'), 'rb') as f:
+    with open(os.path.join('pickledir', 'args.pickle'), 'rb') as f:
         args = pickle.load(f)
 
     image_size = args['image_size']
@@ -189,7 +189,7 @@ def section_three():
 
         my_cluster = imageset_cluster(features, num_clstrs, min_num_clstrs, max_num_clstrs)
 
-        with open(os.path.join('pickle_folder', 'cluster_class.pickle'), 'wb') as f:
+        with open(os.path.join('pickledir', 'cluster_class.pickle'), 'wb') as f:
             pickle.dump(my_cluster, f)
 
 
@@ -197,14 +197,14 @@ def section_four():
     st.subheader('Cluster Visualization and Imageset Labeling')
 
     # load data
-    with open(os.path.join('pickle_folder', 'cluster_class.pickle'), 'rb') as f:
+    with open(os.path.join('pickledir', 'cluster_class.pickle'), 'rb') as f:
         my_cluster = pickle.load(f)
-    imageset_df = pd.read_pickle(os.path.join('pickle_folder', 'imageset_df.pickle'))
+    imageset_df = pd.read_pickle(os.path.join('pickledir', 'imageset_df.pickle'))
 
-    if not os.path.exists(os.path.join('pickle_folder', 'label_dict.pickle')):
+    if not os.path.exists(os.path.join('pickledir', 'label_dict.pickle')):
         label_dict = dict()
     else:
-        with open(os.path.join('pickle_folder', 'label_dict.pickle'), 'rb') as f:
+        with open(os.path.join('pickledir', 'label_dict.pickle'), 'rb') as f:
             label_dict = pickle.load(f)
 
     st.markdown(f'Number of clusters based on **KMeans** method: {my_cluster.kmns_num_clstrs}')
@@ -239,7 +239,7 @@ def section_four():
 
     if label != 'None':
         label_dict[cluster_choice] = label
-        with open(os.path.join('pickle_folder', 'label_dict.pickle'), 'wb') as f:
+        with open(os.path.join('pickledir', 'label_dict.pickle'), 'wb') as f:
             pickle.dump(label_dict, f)
 
     st.write(label_dict)
@@ -256,10 +256,10 @@ def section_four():
         st.markdown(f'Imageset clusters based on both approaches:')
         st.dataframe(labeled_cluster_df)
 
-        with open(os.path.join('pickle_folder', 'labeled_cluster_df.pickle'), 'wb') as f:
+        with open(os.path.join('pickledir', 'labeled_cluster_df.pickle'), 'wb') as f:
             pickle.dump(labeled_cluster_df, f)
 
-        with open(os.path.join('pickle_folder', 'cluster_method.pickle'), 'wb') as f:
+        with open(os.path.join('pickledir', 'cluster_method.pickle'), 'wb') as f:
             pickle.dump(cluster_method, f)
 
 
@@ -267,13 +267,13 @@ def section_five():
     st.subheader('Cluster Visualization and Imageset Labeling')
 
     # loading
-    with open(os.path.join('pickle_folder', 'cluster_method.pickle'), 'rb') as f:
+    with open(os.path.join('pickledir', 'cluster_method.pickle'), 'rb') as f:
         cluster_method = pickle.load(f)
-    with open(os.path.join('pickle_folder', 'cluster_class.pickle'), 'rb') as f:
+    with open(os.path.join('pickledir', 'cluster_class.pickle'), 'rb') as f:
         my_cluster = pickle.load(f)
-    with open(os.path.join('pickle_folder', 'labeled_cluster_df.pickle'), 'rb') as f:
+    with open(os.path.join('pickledir', 'labeled_cluster_df.pickle'), 'rb') as f:
         labeled_cluster_df = pickle.load(f)
-    imageset_df = pd.read_pickle(os.path.join('pickle_folder', 'imageset_df.pickle'))
+    imageset_df = pd.read_pickle(os.path.join('pickledir', 'imageset_df.pickle'))
 
     st.markdown(f'Labeled based on {cluster_method}:')
     st.write(labeled_cluster_df)
@@ -282,7 +282,7 @@ def section_five():
 
     gt_checkbox = st.checkbox('Are the sub-directories(see "Visualize Imageset" sec.) Ground Truth Labels?')
     # loading
-    with open(os.path.join('pickle_folder', 'ground_truth_labels.pickle'), 'rb') as f:
+    with open(os.path.join('pickledir', 'ground_truth_labels.pickle'), 'rb') as f:
         known_gt_labels = pickle.load(f)
 
     features_embedded = TSNE(n_components=2, random_state=1).fit_transform(features)
