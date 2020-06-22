@@ -40,6 +40,8 @@ To run locally, clone this repository:
 ```
 git clone https://github.com/Saeid-Dousti/Insight-AI-Project-LaibelNet.git
 cd Insight-AI-Project-LaibelNet
+pip install -r requirments.txt
+python setup.py install
 ```
 
 ## Initial Commit
