@@ -1,11 +1,11 @@
 # L`ai'belNet 
 
-<p align="left">  <img src="logo.jpg" width="75" height="38"> </p>
+<p align="left">  <img src="config\logo.jpg" width="75" height="38"> </p>
 
 An AI-powered Image Labeling Tool
 
 <p align="left">
-  <img src="LaibelNet.gif">
+  <img src="config\LaibelNet.gif">
 </p>
 
 *Presentation accompanying this project can be found [here](https://docs.google.com/presentation/d/e/2PACX-1vQN673DnLNkzx0vkuFhmstOFfeqxI_0uv_7NMElC8WDfKQI1X61qqYLGZY_sQ5k3mxDe67u5fVKYIFW/pub?start=false&loop=false&delayms=3000).
@@ -56,9 +56,6 @@ python setup.py install
 
 The feature extraction of the imageset is conducted by CNN algorithms pretrained on imagenet. Three CNN architectures MobileNetV2, ResNet50, and InceptionResNetV2 are included. For faster operation, MobileNetV2 should be tried first and it is observed that it can outperform ResNet50 in the feature extraction. In general, it is expected for the application to perform better on imagesets similar to the imagenet classes. The t-SNE graph can be consulted to evaluate the overal performance of the application.  
 
-```
-# Example
-
-# Step 1
-# Step 2
-```
+<p align="left">
+  <img src="config\t_SNE.jpg">
+</p>
