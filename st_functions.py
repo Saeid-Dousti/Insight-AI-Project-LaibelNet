@@ -1,27 +1,24 @@
-#https://www.youtube.com/watch?v=TNdMeh0DcHQ&feature=youtu.be&hd=1
 import os
 import argparse
 from random import sample
 import matplotlib
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib import rcParams
 import seaborn as sns
 import numpy as np
-from image_set import imageset_dataframe
-from feature_extraction import feature_extraction
-from cluster import imageset_cluster
 import streamlit as st
 from sklearn.manifold import TSNE
 from sklearn.metrics.cluster import homogeneity_score, completeness_score, v_measure_score
 import pickle
 from PIL import Image
-import keras.backend.tensorflow_backend as tb
+from LaibelNet.image_set import imageset_dataframe
+from LaibelNet.feature_extraction import feature_extraction
+from LaibelNet.cluster import imageset_cluster
 
 
 # ---------------------------------------------------------------
 
-# predefined variables
+# default variables
 
 def pars_arg():
     parser = argparse.ArgumentParser(description='lAIbelNet: an automatic labeling tool using unsupervised clustering')
@@ -38,27 +35,6 @@ def pars_arg():
     return args
 
 
-def plot_():
-    rcParams['figuer.figsize'] = 16, 5
-    _ = plt.plot(range(2, 10), silhout, "bo-", color='blue', linewith=3, markersize=8,
-                 label='Silhoutee curve')
-    _ = plt.xlabel("$k$", fontsize=14, family='Arial')
-    _ = plt.ylabel("Silhoutte score", fontsize=14, family='Arial')
-    _ = plt.grid(which='major', color='#cccccc', linestyle='--')
-    _ = plt.title('Silhoutee curve for predict optimal number of clusters',
-                  family='Arial', fontsize=14)
-
-    k = np.argmax(silhout) + 2
-
-    _ = plt.axvline(x=k, linestyle='--', c='green', linewith=3,
-                    label=f'Optimal number of clusters({k})')
-    _ = plt.scatter(k, silhout[k - 2], c='red', s=400)
-    _ = plt.legend(shadow=True)
-    _ = plt.show()
-
-    print(f'The optimal number of clusters is {k}')
-
-
 def total_img_nums(path):
     nums = 0
     for root, _, files in os.walk(path):
@@ -72,7 +48,6 @@ def tsne_plot(tsne_features, labels):
     plt.figure(figsize=(8, 6), dpi=100)
     sns.scatterplot(x='t-SNE one', y='t-SNE two', hue=labels, data=tsne_features,
                     palette=sns.color_palette("hls", len(list(set(labels)))), alpha=1, s=55)
-    # plt.title(os.path.splitext(tsne_features_path)[0])
 
     st.pyplot()
 
@@ -103,11 +78,10 @@ def section_zero():
     # sidebar title and logo
     st.sidebar.title("L`ai'belNet\n _An AI-powered Image Labeling Tool_")
 
-    st.sidebar.image(Image.open('label.jpg').resize((240, 106)))
+    st.sidebar.image(Image.open('logo.jpg').resize((240, 106)))
 
 
 def section_one(args):
-
     st.subheader('Load Imageset')
 
     path_name = st.text_input('Enter imageset path (Ex. data\Labled):', args.data_path)
@@ -313,10 +287,10 @@ def section_five():
 
     features_embedded = TSNE(n_components=2, random_state=1).fit_transform(features)
 
-    silhouette_plot(my_cluster)
+    if my_cluster.kmns_silhout_range:
+        silhouette_plot(my_cluster)
 
     if gt_checkbox:
-
         comp_label_df = pd.DataFrame()
         comp_label_df['Image'] = imageset_df['Image']
         comp_label_df['Ground Truth Label'] = imageset_df['Sub-directory']
@@ -327,28 +301,27 @@ def section_five():
 
         st.markdown('Clustering quality measures compared to Ground Truth labels:')
 
+        st.markdown('**- H (homogeneity)**: _A clustering result satisfies homogeneity if all of'
+                    ' its clusters contain only data points which are members of a single class._')
+        st.markdown('**- C (completeness)**: _A clustering result satisfies completeness if all the data points that '
+                    'are members of a given class are elements of the same cluster._')
+        st.markdown('**- V**: v_measure score is the harmonic mean between homogeneity and completeness')
+        st.latex(r'''\frac{1}{V} = \frac{1}{C} + \frac{1}{H}''')
 
-    st.markdown('**- H (homogeneity)**: _A clustering result satisfies homogeneity if all of'
-                ' its clusters contain only data points which are members of a single class._')
-    st.markdown('**- C (completeness)**: _A clustering result satisfies completeness if all the data points that are '
-                'members of a given class are elements of the same cluster._')
-    st.markdown('**- V**: v_measure score is the harmonic mean between homogeneity and completeness')
-    st.latex(r'''\frac{1}{V} = \frac{1}{C} + \frac{1}{H}''')
-
-    measures_df = st.write(pd.DataFrame([[homogeneity_score(comp_label_df['Ground Truth Label'],
-                                                            labeled_cluster_df['KMean_Clusters']),
-                                          completeness_score(comp_label_df['Ground Truth Label'],
-                                                             labeled_cluster_df['KMean_Clusters']),
-                                          v_measure_score(comp_label_df['Ground Truth Label'],
-                                                          labeled_cluster_df['KMean_Clusters'])],
-                                         [homogeneity_score(comp_label_df['Ground Truth Label'],
-                                                            labeled_cluster_df['GMM_Clusters']),
-                                          completeness_score(comp_label_df['Ground Truth Label'],
-                                                             labeled_cluster_df['GMM_Clusters']),
-                                          v_measure_score(comp_label_df['Ground Truth Label'],
-                                                          labeled_cluster_df['GMM_Clusters'])]],
-                                        columns=['Homogeneity', 'Completeness', 'V_measure'],
-                                        index=['KMeans', 'GMM']))
+        measures_df = st.write(pd.DataFrame([[homogeneity_score(comp_label_df['Ground Truth Label'],
+                                                                labeled_cluster_df['KMean_Clusters']),
+                                              completeness_score(comp_label_df['Ground Truth Label'],
+                                                                 labeled_cluster_df['KMean_Clusters']),
+                                              v_measure_score(comp_label_df['Ground Truth Label'],
+                                                              labeled_cluster_df['KMean_Clusters'])],
+                                             [homogeneity_score(comp_label_df['Ground Truth Label'],
+                                                                labeled_cluster_df['GMM_Clusters']),
+                                              completeness_score(comp_label_df['Ground Truth Label'],
+                                                                 labeled_cluster_df['GMM_Clusters']),
+                                              v_measure_score(comp_label_df['Ground Truth Label'],
+                                                              labeled_cluster_df['GMM_Clusters'])]],
+                                            columns=['Homogeneity', 'Completeness', 'V_measure'],
+                                            index=['KMeans', 'GMM']))
 
     st.markdown('t-SNE plot based on discovered labels:')
     tsne_plot(pd.DataFrame(features_embedded, columns=['t-SNE one', 't-SNE two']), labeled_cluster_df['Label'])
@@ -357,8 +330,6 @@ def section_five():
         st.markdown('t-SNE plot based on Ground Truth labels:')
         tsne_plot(pd.DataFrame(features_embedded, columns=['t-SNE one', 't-SNE two']),
                   imageset_df['Sub-directory'])
-
-
 
 
 def main():

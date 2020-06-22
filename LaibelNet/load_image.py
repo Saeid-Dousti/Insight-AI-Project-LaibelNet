@@ -2,6 +2,15 @@ from PIL import Image
 
 
 def load_image(image_path, image_size):
+    '''
+
+    Args:
+        image_path:
+        image_size:
+
+    Returns:
+
+    '''
     im = Image.open(image_path)
     w, h = im.size
     res = min(h, w)

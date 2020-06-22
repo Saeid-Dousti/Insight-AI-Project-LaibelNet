@@ -1,5 +1,4 @@
 import numpy as np
-import streamlit as st
 from sklearn.mixture import GaussianMixture as GMM
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score

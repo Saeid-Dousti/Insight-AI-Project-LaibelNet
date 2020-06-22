@@ -1,4 +1,3 @@
-import streamlit as st
 from keras.applications import MobileNetV2
 from keras.applications import InceptionResNetV2
 from keras.applications import ResNet50
@@ -6,7 +5,6 @@ from keras.layers import GlobalAveragePooling2D
 from keras.models import Model
 
 
-@st.cache
 def feature_extraction(cnn_name, image_size, img):
     if cnn_name == 'MobileNetV2':
         model = MobileNetV2(include_top=False, weights='imagenet', input_shape=(image_size[0], image_size[1], 3))
