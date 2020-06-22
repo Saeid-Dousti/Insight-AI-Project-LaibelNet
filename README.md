@@ -30,27 +30,13 @@ In this project, I am proposing an unsupervised approach to label image data for
   |    --\class n
   |       (images)
   -- (images)
+'''
 
-```
-
-## Motivation for this project format:
-- **Insight_Project_Framework** : Put all source code for production within structured directory
-- **tests** : Put all source code for testing in an easy to find location
-- **configs** : Enable modification of all preset variables within single directory (consisting of one or many config files for separate tasks)
-- **data** : Include example a small amount of data in the Github repository so tests can be run to validate installation
-- **build** : Include scripts that automate building of a standalone environment
-- **static** : Any images or content to include in the README or web framework if part of the pipeline
-
-## Setup
+## Environment Setup
 To run locally, clone this repository:
 ```
-repo_name=Insight_Project_Framework # URL of your new repository
-username=mrubash1 # Username for your personal github account
-git clone https://github.com/$username/$repo_name
-cd $repo_name
-echo "export $repo_name=${PWD}" >> ~/.bash_profile
-echo "export PYTHONPATH=$repo_name/src:${PYTHONPATH}" >> ~/.bash_profile
-source ~/.bash_profile
+git clone https://github.com/Saeid-Dousti/Insight-AI-Project-LaibelNet.git
+cd Insight-AI-Project-LaibelNet
 ```
 Create new development branch and switch onto it
 ```
