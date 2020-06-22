@@ -51,6 +51,10 @@ cd Insight-AI-Project-LaibelNet
 pip install -r requirments.txt
 python setup.py install
 ```
+To run **_L`ai'belNet_** use
+```
+streamlit run app.py
+```
 
 ## Analysis
 
