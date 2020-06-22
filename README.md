@@ -54,8 +54,8 @@ python setup.py install
 
 ## Analysis
 
-The feature extraction is conducted by CNN algorithms pretrained on imagenet. It is expected that the application to perform better on 
-imagesets similar to the imagenet classes. 
+The feature extraction of the imageset is conducted by CNN algorithms pretrained on imagenet. Three CNN architectures MobileNetV2, ResNet50, and InceptionResNetV2 are included. For faster operation, MobileNetV2 should be tried first and it is observed that it can outperform ResNet50 in the feature extraction. In general, it is expected for the application to perform better on imagesets similar to the imagenet classes. The t-SNE graph can be consulted to evaluate the overal performance of the application.  
+
 ```
 # Example
 
