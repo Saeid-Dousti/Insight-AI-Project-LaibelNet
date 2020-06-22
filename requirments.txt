@@ -1,4 +1,4 @@
-tensorflow>=2.0.0
+tensorflow>=2.2.0
 Keras>=2.0.0
 setuptools~=45.2.0
 numpy~=1.16.4
