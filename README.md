@@ -30,18 +30,13 @@ In this project, I am proposing an unsupervised approach to label image data for
   |    --\class n
   |       (images)
   -- (images)
-'''
+```
 
 ## Environment Setup
 To run locally, clone this repository:
 ```
 git clone https://github.com/Saeid-Dousti/Insight-AI-Project-LaibelNet.git
 cd Insight-AI-Project-LaibelNet
-```
-Create new development branch and switch onto it
-```
-branch_name=dev-readme_requisites-20180905 # Name of development branch, of the form 'dev-feature_name-date_of_creation'}}
-git checkout -b $branch_name
 ```
 
 ## Initial Commit
