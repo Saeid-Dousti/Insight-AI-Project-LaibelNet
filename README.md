@@ -1,12 +1,14 @@
+# L`ai'belNet 
+
 <p align="left">  <img src="logo.jpg" width="60" height="30"> </p>
 
-# L`ai'belNet 
-              
 An AI-powered Image Labeling Tool
 
-<p align="center">
+<p align="left">
   <img src="LaibelNet.gif">
 </p>
+
+**You can find the slide deck accompanying this project here.
 
 ## Introduction
 Labeling images is an initial and essential step in training computer vision algorithms.  This has offered great business opportunities. Image labeling is currently conducted mostly manually, and companies are actively looking for methods to accelerate this process and make it faster, cheaper, more profitable. 
