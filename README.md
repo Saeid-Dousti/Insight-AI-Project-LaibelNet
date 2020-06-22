@@ -39,7 +39,9 @@ The application's algorithm entails muliple steps broken into sections. The resu
 
 ## Dependencies and Installation
 
-- [Anaconda] 
+Inclusion of Keras and Tensorflow via Anaconda env is required.
+
+- [Anaconda](https://docs.anaconda.com/anaconda/install/) 
 - [Streamlit](streamlit.io)
 
 To run locally, clone this repository:
