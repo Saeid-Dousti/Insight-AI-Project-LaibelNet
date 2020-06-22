@@ -1,6 +1,6 @@
 # L`ai'belNet 
 
-<p align="left">  <img src="logo.jpg" width="60" height="30"> </p>
+<p align="left">  <img src="logo.jpg" width="75" height="38"> </p>
 
 An AI-powered Image Labeling Tool
 
