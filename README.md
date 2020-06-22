@@ -35,12 +35,13 @@ In this project, I am proposing an unsupervised approach to label image data for
   -- (images)
 ```
 
-#### Dependencies
+The application's algorithm entails muliple steps broken into sections. The results of each section is saved in pickle files and stored  interacively in *pickldir* directory. DO NOT commit these files since they are temporary and are very big files.
+
+## Dependencies and Installation
 
 - [Anaconda] 
 - [Streamlit](streamlit.io)
 
-## Environment Setup and Installation
 To run locally, clone this repository:
 ```
 git clone https://github.com/Saeid-Dousti/Insight-AI-Project-LaibelNet.git
