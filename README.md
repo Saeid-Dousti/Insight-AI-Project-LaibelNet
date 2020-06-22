@@ -8,7 +8,7 @@ An AI-powered Image Labeling Tool
   <img src="LaibelNet.gif">
 </p>
 
-**You can find the slide deck accompanying this project here.
+**You can find the slide deck accompanying this project [here](https://docs.google.com/presentation/d/1lIhz2T4jH3_wzfyQNQeuQYNtVsZJp2iNZJCY-AHCGjE/edit#slide=id.p1).
 
 ## Introduction
 Labeling images is an initial and essential step in training computer vision algorithms.  This has offered great business opportunities. Image labeling is currently conducted mostly manually, and companies are actively looking for methods to accelerate this process and make it faster, cheaper, more profitable. 
