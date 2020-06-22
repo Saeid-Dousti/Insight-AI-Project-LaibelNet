@@ -42,7 +42,7 @@ In this project, I am proposing an unsupervised approach to label image data for
 - **static** : Any images or content to include in the README or web framework if part of the pipeline
 
 ## Setup
-Clone repository and update python path
+To run locally, clone this repository:
 ```
 repo_name=Insight_Project_Framework # URL of your new repository
 username=mrubash1 # Username for your personal github account
