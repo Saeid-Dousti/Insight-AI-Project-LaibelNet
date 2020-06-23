@@ -35,7 +35,7 @@ In this project, I am proposing an unsupervised approach to label image data for
   -- (images)
 ```
 
-The application's algorithm entails muliple steps broken into sections. The results of each section is saved in pickle files and stored  interacively in *pickldir* directory. DO NOT commit these files since they are temporary and are very big files.
+The application's algorithm entails muliple steps broken into sections. The results of each section is saved in pickle files and stored  interacively in *pickldir* directory. DO NOT commit these files since they are temporary and are very large.
 
 ## Dependencies and Installation
 
@@ -61,9 +61,11 @@ available which raises error(s).
 
 Docker image build(Optional):
 ```
-docker build -t laibelnet:v1 -f Dockerfile.app
+docker build -t laibelnet:v1 -f Dockerfile.app .
 docker run -p 80:80 laibelnet:v1
 ```
+
+Docker image of **_L`ai'belNet_** application can be downloaded from [here](https://hub.docker.com/repository/registry-1.docker.io/saeiddousti86/laibelnet/tags?page=1).
 
 ## Analysis
 
