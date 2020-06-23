@@ -78,7 +78,7 @@ def section_zero():
     # sidebar title and logo
     st.sidebar.title("L`ai'belNet\n _An AI-powered Image Labeling Tool_")
 
-    st.sidebar.image(Image.open('config\logo.jpg').resize((240, 106)))
+    st.sidebar.image(Image.open('config/logo.jpg').resize((240, 106)))
 
 
 def section_one(args):

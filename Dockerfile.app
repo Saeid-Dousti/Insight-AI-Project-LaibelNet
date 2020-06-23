@@ -5,23 +5,23 @@ FROM continuumio/miniconda3
 
 
 # copy local files into container
-COPY app.py /tmp/
-COPY requirements.txt /tmp/
-COPY setup.py /tmp/
-COPY st_functions.py /tmp/
+COPY . /tmp/
+#COPY requirements.txt /tmp/
+#COPY setup.py /tmp/
+#COPY st_functions.py /tmp/
 
-COPY data /tmp/data
-COPY LaibelNet /tmp/LaibelNet
-COPY config /tmp/config
-COPY pickledir /tmp/pickledir
+#COPY data /tmp/data
+#COPY LaibelNet /tmp/LaibelNet
+#COPY config /tmp/config
+#COPY pickledir /tmp/pickledir
 
 # .streamlit to make enableCORS=False
-COPY .streamlit /tmp/.streamlit
+#COPY .streamlit /tmp/.streamlit
 
 # install python 3.7
 RUN conda install python=3.7
 
-ENV PORT 8080
+EXPOSE 8080
 
 # change directory
 WORKDIR /tmp
