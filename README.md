@@ -65,7 +65,7 @@ docker build -t laibelnet:v1 -f Dockerfile.app .
 docker run -p 80:80 laibelnet:v1
 ```
 
-Docker image of **_L`ai'belNet_** application can be downloaded from (here)[https://hub.docker.com/repository/registry-1.docker.io/saeiddousti86/laibelnet/tags?page=1].
+Docker image of **_L`ai'belNet_** application can be downloaded from [here](https://hub.docker.com/repository/registry-1.docker.io/saeiddousti86/laibelnet/tags?page=1).
 
 ## Analysis
 
