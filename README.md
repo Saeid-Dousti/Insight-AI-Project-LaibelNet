@@ -56,6 +56,12 @@ To run **_L`ai'belNet_** use
 streamlit run app.py
 ```
 
+Docker image build(Optional):
+```
+docker build -t LaibelNet:v1 -f Dockerfile.app
+docker run -p 80:80 LaibelNet:v1
+```
+
 ## Analysis
 
 The feature extraction of the imageset is conducted by CNN algorithms pretrained on imagenet. Three CNN architectures MobileNetV2, ResNet50, and InceptionResNetV2 are included. For faster operation, MobileNetV2 should be tried first and it is observed that it can outperform ResNet50 in the feature extraction. In general, it is expected for the application to perform better on imagesets similar to the imagenet classes. The t-SNE graph can be consulted to evaluate the overal performance of the application.  
