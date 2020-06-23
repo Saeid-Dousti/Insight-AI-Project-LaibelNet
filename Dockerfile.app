@@ -7,18 +7,21 @@ FROM continuumio/miniconda3
 # copy local files into container
 COPY app.py /tmp/
 COPY requirements.txt /tmp/
-COPY cloudwine /tmp/cloudwine
-#COPY data /tmp/data
-# .streamlit for something to do with making enableCORS=False
-COPY .streamlit /tmp/.streamlit
-COPY build /tmp/build
+COPY setup.py /tmp/
+COPY st_functions.py /tmp/
 
-# install python 3.8.3
-RUN conda install python=3.8.3
-# RUN conda install faiss-cpu=1.5.1 -c pytorch -y
+COPY data /tmp/data
+COPY LaibelNet /tmp/LaibelNet
+COPY config /tmp/config
+COPY pickledir /tmp/pickledir
+
+# .streamlit to make enableCORS=False
+COPY .streamlit /tmp/.streamlit
+
+# install python 3.7
+RUN conda install python=3.7
 
 ENV PORT 8080
-ENV GOOGLE_APPLICATION_CREDENTIALS=/tmp/build/storage-read-only-service-account.json
 
 # change directory
 WORKDIR /tmp
