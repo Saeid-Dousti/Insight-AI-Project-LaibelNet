@@ -48,7 +48,7 @@ To run locally, clone this repository:
 ```
 git clone https://github.com/Saeid-Dousti/Insight-AI-Project-LaibelNet.git
 cd Insight-AI-Project-LaibelNet
-pip install -r requirments.txt
+pip install -r requirements.txt
 python setup.py install
 ```
 To run **_L`ai'belNet_** use
