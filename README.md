@@ -58,8 +58,8 @@ streamlit run app.py
 
 Docker image build(Optional):
 ```
-docker build -t LaibelNet:v1 -f Dockerfile.app
-docker run -p 80:80 LaibelNet:v1
+docker build -t laibelnet:v1 -f Dockerfile.app
+docker run -p 80:80 laibelnet:v1
 ```
 
 ## Analysis
