@@ -61,7 +61,7 @@ available which raises error(s).
 
 Docker image build(Optional):
 ```
-docker build -t laibelnet:v1 -f Dockerfile.app
+docker build -t laibelnet:v1 -f Dockerfile.app .
 docker run -p 80:80 laibelnet:v1
 ```
 
