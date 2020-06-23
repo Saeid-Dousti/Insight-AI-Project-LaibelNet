@@ -57,7 +57,7 @@ streamlit run app.py
 ```
 
 While runing the application make sure to run sections in order otherwise the required pickle file to run the next section won't be 
-available and cause error.
+available which raises error(s).
 
 Docker image build(Optional):
 ```
