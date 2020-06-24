@@ -78,7 +78,7 @@ def section_zero():
     # sidebar title and logo
     st.sidebar.title("L`ai'belNet\n _An AI-powered Image Labeling Tool_")
     try:
-        st.sidebar.image(Image.open('config/logo.jpg').resize((240, 106)))
+        st.sidebar.image(Image.open(os.path.join('config','logo.jpg')).resize((240, 106)))
     except:
         pass
 
@@ -86,7 +86,18 @@ def section_zero():
 def section_one(args):
     st.subheader('Load Imageset')
 
-    path_name = st.text_input('Enter imageset path (Ex. data\Labled):', args.data_path)
+    if not os.path.exists('pickledir'):
+        os.makedirs('pickledir')
+
+    if os.path.exists(os.path.join('pickledir', 'image_path.pickle')):
+        with open(os.path.join('pickledir', 'image_path.pickle'), 'rb') as f:
+            tmp = pickle.load(f)
+        path_name = st.text_input('Enter imageset path (Ex. data/Labled):', tmp)
+    else:
+        path_name = st.text_input('Enter imageset path (Ex. data/Labled):', args.data_path)
+
+    with open(os.path.join('pickledir', 'image_path.pickle'), 'wb') as f:
+        pickle.dump(path_name, f)
 
     img_num = st.slider('Number of images to analyze:', 2,
                         total_img_nums(path_name), total_img_nums(path_name))
@@ -105,9 +116,6 @@ def section_one(args):
         st.markdown('Imageset summary table:')
 
         imageset_df = imageset_dataframe(path_name, image_size, img_num)
-
-        if not os.path.exists('pickledir'):
-            os.makedirs('pickledir')
 
         # save dataframe
         imageset_df.to_pickle(os.path.join('pickledir', 'imageset_df.pickle'))
