@@ -1,7 +1,7 @@
 [server]
 # Turn this to true or comment out
 enableCORS = false
-port=80
+# port=80
 
 [browser]
 # Put the URL people will go to here:
