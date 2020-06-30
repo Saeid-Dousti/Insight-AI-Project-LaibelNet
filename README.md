@@ -8,7 +8,7 @@ An AI-powered Image Labeling Tool
   <img src="config\LaibelNet.gif">
 </p>
 
-*The code is deployed [here}(https://s4a.streamlit.io/Saeid-Dousti/Insight-AI-Project-LaibelNet/master/app.py/+/). Presentation accompanying this project can be found [here](https://docs.google.com/presentation/d/e/2PACX-1vQN673DnLNkzx0vkuFhmstOFfeqxI_0uv_7NMElC8WDfKQI1X61qqYLGZY_sQ5k3mxDe67u5fVKYIFW/pub?start=false&loop=false&delayms=3000).
+*The code is deployed [here](https://s4a.streamlit.io/Saeid-Dousti/Insight-AI-Project-LaibelNet/master/app.py/+/). Presentation accompanying this project can be found [here](https://docs.google.com/presentation/d/e/2PACX-1vQN673DnLNkzx0vkuFhmstOFfeqxI_0uv_7NMElC8WDfKQI1X61qqYLGZY_sQ5k3mxDe67u5fVKYIFW/pub?start=false&loop=false&delayms=3000).
 **You can watch the application video demo [here](https://www.youtube.com/watch?v=TNdMeh0DcHQ).
 
 ## Introduction
