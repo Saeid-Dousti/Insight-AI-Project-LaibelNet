@@ -1,4 +1,4 @@
-import keras.backend.tensorflow_backend as tb
+# import keras.backend.tensorflow_backend as tb
 import streamlit as st
 from st_functions import section_zero, pars_arg, introduction, \
     section_one, section_two, section_three, section_four, \
@@ -6,7 +6,7 @@ from st_functions import section_zero, pars_arg, introduction, \
 
 
 def main():
-    tb._SYMBOLIC_SCOPE.value = True
+    #tb._SYMBOLIC_SCOPE.value = True
 
     section_zero()
     args = pars_arg()
