@@ -316,7 +316,7 @@ def section_five():
         st.markdown('**- C (completeness)**: _A clustering result satisfies completeness if all the data points that '
                     'are members of a given class are elements of the same cluster._')
         st.markdown('**- V**: v_measure score is the harmonic mean between homogeneity and completeness')
-        st.latex(r'''\frac{1}{V} = \frac{1}{C} + \frac{1}{H}''')
+        st.latex(r'''\frac{1}{V} = \frac{1}{2}\left(\frac{1}{C} + \frac{1}{H}\right)''')
 
         measures_df = st.write(pd.DataFrame([[homogeneity_score(comp_label_df['Ground Truth Label'],
                                                                 labeled_cluster_df['KMean_Clusters']),
